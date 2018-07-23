@@ -3,21 +3,22 @@ using System.Collections;
 
 namespace UCodeblock
 {
-    public class ConditionalBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
+    public class WhileLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
         public IEvaluateableCodeblock<bool> Condition { get; set; }
         public CodeblockCollection Children { get; set; }
 
-        public ConditionalBlock ()
+        public WhileLoopBlock()
         {
             Children = new CodeblockCollection();
         }
 
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
-            if (Condition.Evaluate(context))
+            while (Condition.Evaluate(context))
             {
                 yield return context.Source.StartCoroutine(Children.ExecuteCodeblocks(context));
+                yield return null;
             }
             yield break;
         }
