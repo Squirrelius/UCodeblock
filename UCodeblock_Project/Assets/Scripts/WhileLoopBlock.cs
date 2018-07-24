@@ -22,5 +22,18 @@ namespace UCodeblock
             }
             yield break;
         }
+
+        public override IBlockError CheckErrors()
+        {
+            IBlockError error = base.CheckErrors();
+
+            if (error.IsError)
+                return error;
+
+            if (Condition == null)
+                return StandardBlockError.EmptyParameterError;
+
+            return StandardBlockError.None;
+        }
     }
 }
