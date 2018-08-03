@@ -1,32 +1,47 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Provides a system of executeable codeblocks.
+    /// </summary>
     public class CodeblockSystem
     {
-        public EntryBlock Entry;
-        public List<CodeblockCollection> Collections;
+        /// <summary>
+        /// The ID of the first codeblock that will be executed.
+        /// </summary>
+        public string EntryID;
+        /// <summary>
+        /// The collection of codeblocks in the system. Note that not all codeblocks have to be connected!
+        /// </summary>
+        public CodeblockCollection Blocks;
 
-        public int BlockCount => GetAllCodeblocks().Count();
+        /// <summary>
+        /// Is there any error in the codeblocks that will be executed?
+        /// </summary>
         public bool AnyError => GetMainThreadErrors().Count() > 0;
 
+        /// <summary>
+        /// Creates a new instance of a codeblock system.
+        /// </summary>
         public CodeblockSystem()
         {
-            Entry = new EntryBlock();
-            Collections = new List<CodeblockCollection>();
+            Blocks = new CodeblockCollection();
         }
 
+        /// <summary>
+        /// Returns a codeblock by its ID. Returns null if no codeblock with the given ID exists in the collection.
+        /// </summary>
         public CodeblockItem GetByID (string id) 
-            => GetAllCodeblocks().FirstOrDefault(c => c.Identity.ID == id);
+            => Blocks.FirstOrDefault(c => c.Identity.ID == id);
 
-        public IEnumerable<CodeblockItem> GetAllCodeblocks()
-            => Collections.SelectMany(c => c.Codeblocks);
-
-        public CodeblockCollection GetEntryCollection()
-            => Collections.FirstOrDefault(c => c.Any(i => Entry.Identity.ToID == i.Identity.ID));
-
+        /// <summary>
+        /// Gathers all errors in the codeblocks that will be executed.
+        /// </summary>
         public IEnumerable<IBlockError> GetMainThreadErrors()
-            => GetEntryCollection().Select(i => i.CheckErrors());
+            => BuildCodeblockChain().Select(i => i.CheckErrors());
+        
     }
 }
