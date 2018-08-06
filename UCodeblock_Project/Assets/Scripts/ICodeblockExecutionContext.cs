@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace UCodeblock
 {
@@ -7,6 +9,8 @@ namespace UCodeblock
     /// </summary>
     public interface ICodeblockExecutionContext
     {
+        float Delay { get; set; }
         MonoBehaviour Source { get; set; }
+        LoopOperationModule LoopModule { get; set; }
     }
 }

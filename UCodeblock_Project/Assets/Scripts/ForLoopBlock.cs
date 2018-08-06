@@ -19,25 +19,39 @@ namespace UCodeblock
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
             int count = LoopCount.Evaluate(context);
-            for (int i = 0; i < count; i++)
+            if (count > 0)
             {
-                yield return context.Source.StartCoroutine(Children.ExecuteCodeblocks(context));
-                yield return null;
+                for (int i = 0; i < count; i++)
+                {
+                    IEnumerator coroutine = Children.ExecuteCodeblocks(context);
+                    context.LoopModule.RegisterLoopCoroutine(coroutine);
+
+                    yield return context.Source.StartCoroutine(coroutine);
+
+                    // Attempt to complete the most top-level coroutine. If this fails, the method was
+                    // cancelled, the LastCancelReason should be used for further handling.
+                    if (!context.LoopModule.CompleteCoroutine(coroutine))
+                    {
+                        var reason = context.LoopModule.LastCancelReason;
+
+                        if (reason == LoopCancelReason.Break)
+                            break;
+                        if (reason == LoopCancelReason.Continue)
+                            continue;
+                    }
+
+                    yield return new UnityEngine.WaitForSeconds(context.Delay);
+                }
             }
-            yield break;
+            yield return null;
         }
 
         public override IBlockError CheckErrors()
         {
-            IBlockError error = base.CheckErrors();
-
-            if (error.IsError)
-                return error;
-
             if (LoopCount == null)
                 return StandardBlockError.EmptyParameterError;
 
-            return StandardBlockError.None;
+            return null;
         }
     }
 }

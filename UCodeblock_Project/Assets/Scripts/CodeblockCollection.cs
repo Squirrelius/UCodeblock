@@ -12,12 +12,11 @@ namespace UCodeblock
         /// <summary>
         /// The codeblocks contained in the collection.
         /// </summary>
-        public List<CodeblockItem> Codeblocks;
-
+        public List<CodeblockItem> Codeblocks { get; set; }
         /// <summary>
         /// The ID of the first codeblock that will be executed in this collection.
         /// </summary>
-        public string EntryID;
+        public string EntryID { get; set; }
 
         /// <summary>
         /// Creates a new instance of a codeblock collection.
@@ -48,12 +47,13 @@ namespace UCodeblock
         {
             Queue<CodeblockItem> chain = BuildCodeblockChain();
 
-            while (chain.Peek() != null)
+            while (chain.Count > 0 && chain.Peek() != null)
             {
                 CodeblockItem item = chain.Dequeue();
                 if (item is IExecuteableCodeblock)
                 {
                     yield return context.Source.StartCoroutine((item as IExecuteableCodeblock).Execute(context));
+                    yield return new UnityEngine.WaitForSeconds(context.Delay);
                 }
             }
         }
@@ -64,7 +64,7 @@ namespace UCodeblock
         private Queue<CodeblockItem> BuildCodeblockChain()
         {
             Queue<CodeblockItem> items = new Queue<CodeblockItem>();
-
+            
             CodeblockItem item = null;
             string targetId = EntryID;
             while ((item = this[targetId]) != null)
@@ -89,6 +89,26 @@ namespace UCodeblock
         /// Gathers all errors in the codeblocks that will be executed.
         /// </summary>
         public IEnumerable<IBlockError> GetMainThreadErrors()
-            => BuildCodeblockChain().Select(i => i.CheckErrors()).Where(e => e.IsError);
+        {
+            return GatherErrorsRecursively(this);
+        }
+
+        private static IEnumerable<IBlockError> GatherErrorsRecursively (CodeblockCollection collection)
+        {
+            foreach (CodeblockItem item in collection)
+            {
+                IBlockError error = item.CheckErrors();
+                if (error != null)
+                    yield return item.CheckErrors();
+
+                if (item is IControlFlowBlock)
+                {
+                    var suberrors = GatherErrorsRecursively((item as IControlFlowBlock).Children);
+                    foreach (var e in suberrors)
+                        if (e != null)
+                            yield return error;
+                }
+            }
+        }
     }
 }

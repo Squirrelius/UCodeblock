@@ -10,13 +10,13 @@ namespace UCodeblock
     public class CodeblockSystem
     {
         /// <summary>
-        /// The ID of the first codeblock that will be executed.
-        /// </summary>
-        public string EntryID;
-        /// <summary>
         /// The collection of codeblocks in the system. Note that not all codeblocks have to be connected!
         /// </summary>
-        public CodeblockCollection Blocks;
+        public CodeblockCollection Blocks { get; set; }
+        /// <summary>
+        /// The local variables defined the the system.
+        /// </summary>
+        public LocalVariableTable Variables { get; set; }
 
         /// <summary>
         /// Is there any error in the codeblocks that will be executed?
@@ -31,12 +31,5 @@ namespace UCodeblock
         {
             Blocks = new CodeblockCollection();
         }
-
-        /// <summary>
-        /// Returns a codeblock by its ID. Returns null if no codeblock with the given ID exists in the collection.
-        /// </summary>
-        public CodeblockItem GetByID (string id) 
-            => Blocks.FirstOrDefault(c => c.Identity.ID == id);
-        
     }
 }

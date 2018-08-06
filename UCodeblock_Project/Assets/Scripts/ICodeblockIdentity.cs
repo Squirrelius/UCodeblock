@@ -10,7 +10,7 @@ namespace UCodeblock
     /// </summary>
     public interface ICodeblockIdentity
     {
-        string ID { get; set; }
+        string ID { get; }
         string FromID { get; set; }
         string ToID { get; set; }
     }

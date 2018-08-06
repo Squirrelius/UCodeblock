@@ -6,12 +6,12 @@ namespace UCodeblock
     /// <summary>
     /// An if-Block. Executes the child coldblocks if the condition is met.
     /// </summary>
-    public class ConditionalBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
+    public class IfBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
         public IEvaluateableCodeblock<bool> Condition { get; set; }
         public CodeblockCollection Children { get; set; }
 
-        public ConditionalBlock ()
+        public IfBlock()
         {
             Children = new CodeblockCollection();
         }
@@ -20,22 +20,18 @@ namespace UCodeblock
         {
             if (Condition.Evaluate(context))
             {
-                yield return context.Source.StartCoroutine(Children.ExecuteCodeblocks(context));
+                IEnumerator coroutine = Children.ExecuteCodeblocks(context);
+                yield return context.Source.StartCoroutine(coroutine);
             }
-            yield break;
+            yield return null;
         }
 
         public override IBlockError CheckErrors()
         {
-            IBlockError error = base.CheckErrors();
-
-            if (error.IsError)
-                return error;
-
             if (Condition == null)
                 return StandardBlockError.EmptyParameterError;
 
-            return StandardBlockError.None;
+            return null;
         }
     }
 }

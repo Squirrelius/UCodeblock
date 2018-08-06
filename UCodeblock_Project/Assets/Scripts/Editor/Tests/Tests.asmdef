@@ -1,0 +1,12 @@
+{
+    "name": "Tests",
+    "references": [
+        "UCodeblock"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

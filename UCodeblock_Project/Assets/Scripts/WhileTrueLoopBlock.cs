@@ -4,21 +4,20 @@ using System.Collections;
 namespace UCodeblock
 {
     /// <summary>
-    /// A while-Block. Executes its children while the condition is met.
+    /// A while(true)-Block. Executes its children forever.
     /// </summary>
-    public class WhileLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
+    public class WhileTrueLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
-        public IEvaluateableCodeblock<bool> Condition { get; set; }
         public CodeblockCollection Children { get; set; }
 
-        public WhileLoopBlock()
+        public WhileTrueLoopBlock()
         {
             Children = new CodeblockCollection();
         }
 
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
-            while (Condition.Evaluate(context))
+            while (true)
             {
                 IEnumerator coroutine = Children.ExecuteCodeblocks(context);
                 context.LoopModule.RegisterLoopCoroutine(coroutine);
@@ -39,14 +38,6 @@ namespace UCodeblock
                 yield return null;
             }
             yield return null;
-        }
-
-        public override IBlockError CheckErrors()
-        {
-            if (Condition == null)
-                return StandardBlockError.EmptyParameterError;
-
-            return null;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace UCodeblock
         /// <summary>
         /// The ID of the codeblock.
         /// </summary>
-        public string ID { get; set; }
+        public string ID { get; private set; }
         /// <summary>
         /// The ID of the previous codeblock. (Empty if none.)
         /// </summary>
@@ -27,7 +27,7 @@ namespace UCodeblock
         {
             return new StandardIdentity()
             {
-                ID = new Guid().ToString(),
+                ID = Guid.NewGuid().ToString(),
                 FromID = "",
                 ToID = ""
             };
