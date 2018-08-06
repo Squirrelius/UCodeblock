@@ -44,7 +44,7 @@ namespace UCodeblock
         /// Starts the execution of the codeblocks in a coroutine.
         /// </summary>
         /// <param name="context">The context in which the codeblocks should be executed.</param>
-        public IEnumerable ExecuteCodeblocks(ICodeblockExecutionContext context)
+        public IEnumerator ExecuteCodeblocks(ICodeblockExecutionContext context)
         {
             Queue<CodeblockItem> chain = BuildCodeblockChain();
 
@@ -84,5 +84,11 @@ namespace UCodeblock
 
         private void Add (object obj)
             => Codeblocks.Add(obj as CodeblockItem);
+        
+        /// <summary>
+        /// Gathers all errors in the codeblocks that will be executed.
+        /// </summary>
+        public IEnumerable<IBlockError> GetMainThreadErrors()
+            => BuildCodeblockChain().Select(i => i.CheckErrors()).Where(e => e.IsError);
     }
 }

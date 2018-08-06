@@ -3,6 +3,9 @@ using System.Collections;
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// An if-Block. Executes the child coldblocks if the condition is met.
+    /// </summary>
     public class ConditionalBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
         public IEvaluateableCodeblock<bool> Condition { get; set; }

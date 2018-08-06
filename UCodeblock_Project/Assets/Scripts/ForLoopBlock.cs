@@ -3,6 +3,9 @@ using System.Collections;
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// A for-Block. Executes the child codeblocks n times.
+    /// </summary>
     public class ForLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
         public IEvaluateableCodeblock<int> LoopCount { get; set; }

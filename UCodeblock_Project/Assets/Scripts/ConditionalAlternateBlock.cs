@@ -4,24 +4,29 @@ using System.Collections;
 namespace UCodeblock
 {
     /// <summary>
-    /// A while-Block. Executes its children while the condition is met.
+    /// An if-else block. Executes collection A if the condition is met, otherwise collection B.
     /// </summary>
-    public class WhileLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
+    public class ConditionalAlternateBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
         public IEvaluateableCodeblock<bool> Condition { get; set; }
         public CodeblockCollection Children { get; set; }
+        public CodeblockCollection AlternativeChildren { get; set; }
 
-        public WhileLoopBlock()
+        public ConditionalAlternateBlock()
         {
             Children = new CodeblockCollection();
+            AlternativeChildren = new CodeblockCollection();
         }
 
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
-            while (Condition.Evaluate(context))
+            if (Condition.Evaluate(context))
             {
                 yield return context.Source.StartCoroutine(Children.ExecuteCodeblocks(context));
-                yield return null;
+            }
+            else
+            {
+                yield return context.Source.StartCoroutine(AlternativeChildren.ExecuteCodeblocks(context));
             }
             yield break;
         }

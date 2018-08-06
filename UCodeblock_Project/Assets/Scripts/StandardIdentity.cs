@@ -2,6 +2,9 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Provides a standard identity, using GUID strings, for a codeblock.
+    /// </summary>
     public struct StandardIdentity : ICodeblockIdentity
     {
         /// <summary>
