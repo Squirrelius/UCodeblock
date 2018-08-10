@@ -14,7 +14,7 @@ namespace UCodeblock
     /// <summary>
     /// Provides arithmetic operations in a codeblock, such as +, -, / and *.
     /// </summary>
-    public class ComparisonOperationCodeblock : CodeblockItem, IEvaluateableCodeblock<bool>, IOperationalCodeblock<bool>
+    public class ComparisonOperationCodeblock : CodeblockItem, IDynamicEvaluateableCodeblock, IEvaluateableCodeblock<bool>, IOperationalCodeblock<bool>
     {
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(string), typeof(int), typeof(float), typeof(bool) };
@@ -24,10 +24,15 @@ namespace UCodeblock
         public IDynamicEvaluateableCodeblock Left { get; set; }
         public IDynamicEvaluateableCodeblock Right { get; set; }
 
+        public object EvaluateObject(ICodeblockExecutionContext context)
+        {
+            return Evaluate(context);
+        }
+
         public bool Evaluate(ICodeblockExecutionContext context)
         {
-            object l = Left.Evaluate<object>(context),
-                   r = Right.Evaluate<object>(context);
+            object l = Left.EvaluateObject(context),
+                   r = Right.EvaluateObject(context);
 
             // This requires some handling of edge cases:
 
@@ -51,8 +56,13 @@ namespace UCodeblock
 
             if ((l is int || l is float) && (r is int || r is float))
             {
-                float lhs = (float)l,
-                      rhs = (float)r;
+                float lhs = 0, rhs = 0;
+
+                if (l is int) lhs = (int)l;
+                if (l is float) lhs = (float)l;
+
+                if (r is int) rhs = (int)r;
+                if (r is float) rhs = (float)r;
 
                 switch (Operation)
                 {

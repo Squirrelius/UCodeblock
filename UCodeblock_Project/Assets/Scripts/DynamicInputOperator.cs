@@ -4,8 +4,8 @@
     {
         public T Value { get; set; }
 
-        public TResult Evaluate<TResult>(ICodeblockExecutionContext context)
-            => (TResult)(object)(Value);
+        public object EvaluateObject(ICodeblockExecutionContext context)
+            => Value;
 
         public T Evaluate(ICodeblockExecutionContext context)
             => Value;

@@ -7,8 +7,8 @@
     {
         public IEvaluateableCodeblock<bool> Argument { get; set; }
 
-        public T Evaluate<T>(ICodeblockExecutionContext context)
-            => (T)(object)(!Argument.Evaluate(context));
+        public object EvaluateObject(ICodeblockExecutionContext context)
+            => !Argument.Evaluate(context);
 
         public bool Evaluate(ICodeblockExecutionContext context)
             => !Argument.Evaluate(context);

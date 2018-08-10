@@ -6,6 +6,7 @@
     public abstract class CodeblockItem
     {
         public ICodeblockIdentity Identity { get; set; } = StandardIdentity.Generate();
+        public virtual string Content { get; }
 
         public virtual IBlockError CheckErrors ()
         {

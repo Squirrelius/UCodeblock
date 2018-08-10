@@ -28,6 +28,8 @@ namespace UCodeblock.Tests
         public IEnumerator IfConditionTest() { yield return RunCodeblockTestType<UCodeblock_IfElseConditionTest>(); }
         [UnityTest]
         public IEnumerator BreakForLoopTest () { yield return RunCodeblockTestType<UCodeblock_BreakForLoopTest>(); }
+        [UnityTest]
+        public IEnumerator ArithmeticAndLogicTest() { yield return RunCodeblockTestType<UCodeblock_ArithmeticAndLogicTest>(); }
     }
 
     /// <summary>
@@ -75,7 +77,7 @@ namespace UCodeblock.Tests
             CodeblockSystem system = new CodeblockSystem();
 
             DebugLogBlock dlb = new DebugLogBlock();
-            dlb.Content = "This will run 4 times.";
+            dlb.Message = "This will run 4 times.";
 
             DynamicInputOperator<int> count = new DynamicInputOperator<int>();
             count.Value = 4;
@@ -99,10 +101,10 @@ namespace UCodeblock.Tests
             CodeblockSystem system = new CodeblockSystem();
 
             DebugLogBlock ifTrue = new DebugLogBlock();
-            ifTrue.Content = "This ran, because the condition was true.";
+            ifTrue.Message = "This ran, because the condition was true.";
 
             DebugLogBlock ifFalse = new DebugLogBlock();
-            ifFalse.Content = "This ran, because the condition was false.";
+            ifFalse.Message = "This ran, because the condition was false.";
 
             var left = new DynamicInputOperator<float>();
             left.Value = 5;
@@ -134,7 +136,7 @@ namespace UCodeblock.Tests
             CodeblockSystem system = new CodeblockSystem();
 
             DebugLogBlock dlb = new DebugLogBlock();
-            dlb.Content = "This should never run.";
+            dlb.Message = "This should never run.";
 
             BreakCodeblock bc = new BreakCodeblock();
             bc.Identity.ToID = dlb.Identity.ID;
@@ -152,6 +154,54 @@ namespace UCodeblock.Tests
 
             system.Blocks.Codeblocks.Add(flb);
             system.Blocks.EntryID = flb.Identity.ID;
+
+            return system;
+        }
+    }
+    public sealed class UCodeblock_ArithmeticAndLogicTest : UCodeblock_TestBase
+    {
+        protected override CodeblockSystem BuildSystem()
+        {
+            CodeblockSystem system = new CodeblockSystem();
+
+            DynamicInputOperator<int>[] inputs = new DynamicInputOperator<int>[4];
+            for (int i = 0; i < 4; i++)
+            {
+                DynamicInputOperator<int> input = new DynamicInputOperator<int>();
+                input.Value = i * 2;
+                inputs[i] = input;
+            }
+
+            ComparisonOperationCodeblock left = new ComparisonOperationCodeblock()
+            {
+                Left = inputs[0],
+                Right = inputs[1],
+                Operation = ComparisonOperation.SmallerOrEqual
+            };
+            ComparisonOperationCodeblock right = new ComparisonOperationCodeblock()
+            {
+                Left = inputs[2],
+                Right = inputs[3],
+                Operation = ComparisonOperation.Equal
+            };
+
+            LogicOperationCodeblock logic = new LogicOperationCodeblock()
+            {
+                Left = left,
+                Right = right,
+                Operation = LogicalOperation.OR
+            };
+
+            DebugLogBlock dlb = new DebugLogBlock();
+            dlb.Message = "0 <= 2 || 4 == 6  -->  TRUE";
+
+            IfBlock ifblock = new IfBlock();
+            ifblock.Children.Codeblocks.Add(dlb);
+            ifblock.Children.EntryID = dlb.Identity.ID;
+            ifblock.Condition = logic;
+
+            system.Blocks.Codeblocks.Add(ifblock);
+            system.Blocks.EntryID = ifblock.Identity.ID;
 
             return system;
         }

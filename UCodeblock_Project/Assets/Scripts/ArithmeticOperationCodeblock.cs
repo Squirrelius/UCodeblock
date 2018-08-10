@@ -13,7 +13,7 @@ namespace UCodeblock
     /// <summary>
     /// Provides arithmetic operations in a codeblock, such as +, -, / and *.
     /// </summary>
-    public class ArithmeticOperationCodeblock : CodeblockItem, IEvaluateableCodeblock<float>, IOperationalCodeblock<float>
+    public class ArithmeticOperationCodeblock : CodeblockItem, IDynamicEvaluateableCodeblock, IEvaluateableCodeblock<float>, IOperationalCodeblock<float>
     {
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(int), typeof(float) };
@@ -23,21 +23,34 @@ namespace UCodeblock
         public IDynamicEvaluateableCodeblock Left { get; set; }
         public IDynamicEvaluateableCodeblock Right { get; set; }
 
+        public object EvaluateObject(ICodeblockExecutionContext context)
+        {
+            return Evaluate(context);
+        }
+
         public float Evaluate(ICodeblockExecutionContext context)
         {
-            float l = (float)Left.Evaluate<object>(context),
-                  r = (float)Right.Evaluate<object>(context);
+            object l = Left.EvaluateObject(context),
+                   r = Right.EvaluateObject(context);
+
+            float lhs = 0, rhs = 0;
+
+            if (l is int) lhs = (int)l;
+            if (l is float) lhs = (float)l;
+
+            if (r is int) rhs = (int)r;
+            if (r is float) rhs = (float)r;
 
             switch (Operation)
             {
                 case ArithmeticOperation.Add:
-                    return l + r;
+                    return lhs + rhs;
                 case ArithmeticOperation.Subtract:
-                    return l - r;
+                    return lhs - rhs;
                 case ArithmeticOperation.Multiply:
-                    return l * r;
+                    return lhs * rhs;
                 case ArithmeticOperation.Divide:
-                    return l / r;
+                    return lhs / rhs;
 
                 default: throw new Exception($"Invalid arithmetic operation selected. (ID: { (int)Operation })");
             }

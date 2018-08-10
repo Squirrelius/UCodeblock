@@ -55,6 +55,7 @@ namespace UCodeblock
                     yield return context.Source.StartCoroutine((item as IExecuteableCodeblock).Execute(context));
                     yield return new UnityEngine.WaitForSeconds(context.Delay);
                 }
+                yield return null;
             }
         }
 
@@ -85,6 +86,97 @@ namespace UCodeblock
         private void Add (object obj)
             => Codeblocks.Add(obj as CodeblockItem);
         
+        public void InsertItem(CodeblockItem item, CodeblockItem prevSibling)
+        {
+            InsertItemRange(new CodeblockItem[] { item }, prevSibling);
+        }
+        public void InsertItemRange(CodeblockItem[] items, CodeblockItem prevSibling)
+        {
+            // Check if there is a previous sibling:
+            // - if yes: Get the ID of it, and insert the item range between the previous sibling and the next sibling
+            // - if not: Set the range as the entry, and prepend the range to the previous entry block (if there)
+
+            string nextId = (prevSibling == null ? EntryID : prevSibling.Identity.ToID);
+            CodeblockItem nextSibling = (string.IsNullOrEmpty(nextId) ? null : this[nextId]);
+
+            InsertItemRangeBetween(items, prevSibling, nextSibling);
+        }
+        private void InsertItemRangeBetween (CodeblockItem[] items, CodeblockItem prevSibling, CodeblockItem nextSibling)
+        {
+            // Add the item to the collection
+            Codeblocks.AddRange(items);
+
+            CodeblockItem first = items.First(),
+                          last = items.Last();
+
+            if (prevSibling == null)
+            {
+                // There was no previous sibling passed. Set this item as the first item in the collection.
+                EntryID = first.Identity.ID;
+                first.Identity.FromID = "";
+            }
+            else
+            {
+                prevSibling.Identity.ToID = first.Identity.ID;
+                first.Identity.FromID = prevSibling.Identity.ID;
+            }
+
+            if (nextSibling == null)
+            {
+                // There was no next sibling passed.
+                last.Identity.ToID = "";
+            }
+            else
+            {
+                nextSibling.Identity.FromID = last.Identity.ID;
+                last.Identity.ToID = nextSibling.Identity.ID;
+            }
+        }
+
+        public void DetachItem (CodeblockItem item)
+        {
+            DetachItemRange(new CodeblockItem[] { item });
+        }
+        public void DetachItemRange (CodeblockItem[] items)
+        {
+            CodeblockItem first = items.First(),
+                          last = items.Last();
+
+            // Gather the codeblock coming before the range, or null
+            string prevId = first.Identity.FromID;
+            CodeblockItem prev = (string.IsNullOrEmpty(prevId) ? null : this[prevId]);
+
+            // Same as above, but with the next codeblock
+            string nextId = last.Identity.ToID;
+            CodeblockItem next = (string.IsNullOrEmpty(prevId) ? null : this[nextId]);
+
+            DetachItemRangeFrom(items, prev, next);
+        }
+        private void DetachItemRangeFrom (CodeblockItem[] items, CodeblockItem prevSibling, CodeblockItem nextSibling)
+        {
+            CodeblockItem first = items.First(),
+                          last = items.Last();
+            
+            if (prevSibling == null && first.Identity.ID == EntryID)
+            {
+                // The first item is the entry item, so reset the entry id
+                EntryID = "";
+            }
+            if (prevSibling != null)
+            {
+                // Detach the first item from the previous sibling
+                prevSibling.Identity.ToID = "";
+                first.Identity.FromID = "";
+            }
+
+            if (nextSibling != null)
+            {
+                // Detach the last item from the next sibling
+                nextSibling.Identity.FromID = "";
+                last.Identity.ToID = "";
+            }
+        }
+
         /// <summary>
         /// Gathers all errors in the codeblocks that will be executed.
         /// </summary>
@@ -92,7 +184,6 @@ namespace UCodeblock
         {
             return GatherErrorsRecursively(this);
         }
-
         private static IEnumerable<IBlockError> GatherErrorsRecursively (CodeblockCollection collection)
         {
             foreach (CodeblockItem item in collection)

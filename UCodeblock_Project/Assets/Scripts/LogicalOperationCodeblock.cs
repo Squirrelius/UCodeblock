@@ -23,8 +23,8 @@ namespace UCodeblock
 
         public bool Evaluate(ICodeblockExecutionContext context)
         {
-            bool l = Left.Evaluate<bool>(context),
-                   r = Right.Evaluate<bool>(context);
+            bool l = (bool)Left.EvaluateObject(context),
+                 r = (bool)Right.EvaluateObject(context);
 
             switch (Operation)
             {
