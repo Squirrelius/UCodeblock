@@ -4,13 +4,28 @@ using UnityEngine;
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// The reason why a loop was cancelled.
+    /// </summary>
     public enum LoopCancelReason
     {
+        /// <summary>
+        /// Don't stop the execution of the loop.
+        /// </summary>
         None = 0,
+        /// <summary>
+        /// Break out of the execution of the loop.
+        /// </summary>
         Break,
+        /// <summary>
+        /// Continue a new cycle of execution of the loop.
+        /// </summary>
         Continue
     }
 
+    /// <summary>
+    /// Provides loop operation methods for the execution of a <see cref="CodeblockSystem>"/>;
+    /// </summary>
     public class LoopOperationModule
     {
         /// <summary>

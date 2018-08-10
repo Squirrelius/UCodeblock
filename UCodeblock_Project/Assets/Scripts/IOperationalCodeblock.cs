@@ -2,6 +2,10 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Defines a codeblock that evaluates an operation between two <see cref="IDynamicEvaluateableCodeblock"/>s.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     interface IOperationalCodeblock<T>
     {
         Type[] AllowedOperandTypes { get; }

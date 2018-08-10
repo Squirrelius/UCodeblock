@@ -2,6 +2,9 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Used to break out of the execution of a loop (for, while, while-true).
+    /// </summary>
     public sealed class BreakCodeblock : CodeblockItem, IExecuteableCodeblock
     {
         public IEnumerator Execute(ICodeblockExecutionContext context)

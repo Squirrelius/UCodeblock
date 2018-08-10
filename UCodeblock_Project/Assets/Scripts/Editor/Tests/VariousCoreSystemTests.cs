@@ -7,17 +7,21 @@ using System.Collections.Generic;
 
 namespace UCodeblock.Tests
 {
+    /// <summary>
+    /// Holds various core <see cref="CodeblockSystem"/> tests.
+    /// </summary>
     public class VariousCoreSystemTests
     {
         /// <summary>
         /// Runs a [UnityTest] for the specified CodeblockTestType.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of the test to run.</typeparam>
         /// <returns></returns>
         private static IEnumerator RunCodeblockTestType<T>() where T : UCodeblock_TestBase, IMonoBehaviourTest
         {
             MonoBehaviourTest<T> test = new MonoBehaviourTest<T>();
             yield return test;
+            
             Assert.True((test.component as UCodeblock_TestBase).IsTestSuccess);
             yield break;
         }
@@ -70,38 +74,51 @@ namespace UCodeblock.Tests
         }
     }
 
+    /// <summary>
+    /// Tests if a for-loop block can run for a given amount of times.
+    /// </summary>
     internal sealed class UCodeblock_ForLoopTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
             CodeblockSystem system = new CodeblockSystem();
 
-            DebugLogBlock dlb = new DebugLogBlock();
-            dlb.Message = "This will run 4 times.";
+            const int desiredLoopCount = 4;
+            int loopRunCount = 0;
+            ActionBlock loopCountIncrement = new ActionBlock();
+            loopCountIncrement.Action = () => loopRunCount++;
 
             DynamicInputOperator<int> count = new DynamicInputOperator<int>();
-            count.Value = 4;
+            count.Value = desiredLoopCount;
 
-            ForLoopBlock flb = new ForLoopBlock();
-            flb.LoopCount = count;
+            ForLoopBlock forLoop = new ForLoopBlock();
+            forLoop.LoopCount = count;
 
-            system.Blocks.InsertItem(flb, null);
-            flb.Children.InsertItem(dlb, null);
+            AssertTestBlock assert = new AssertTestBlock();
+            assert.Condition = () => loopRunCount == desiredLoopCount;
+
+            forLoop.Children.InsertItem(loopCountIncrement, null);
+
+            system.Blocks.InsertItem(forLoop, null);
+            system.Blocks.InsertItem(assert, forLoop);
 
             return system;
         }
     }
+    /// <summary>
+    /// Checks if an if-else block can implement and evaluate a condition.
+    /// </summary>
     internal sealed class UCodeblock_IfElseConditionTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
             CodeblockSystem system = new CodeblockSystem();
 
-            DebugLogBlock ifTrue = new DebugLogBlock();
-            ifTrue.Message = "This ran, because the condition was true.";
+            AssertTestBlock ifTrue = new AssertTestBlock();
+            ifTrue.Condition = () => true;
 
-            DebugLogBlock ifFalse = new DebugLogBlock();
-            ifFalse.Message = "This ran, because the condition was false.";
+            AssertTestBlock ifFalse = new AssertTestBlock();
+            ifFalse.Condition = () => false;
 
             var left = new DynamicInputOperator<float>();
             left.Value = 5;
@@ -124,16 +141,19 @@ namespace UCodeblock.Tests
             return system;
         }
     }
+    /// <summary>
+    /// Checks if the break block works inside a for loop.
+    /// </summary>
     internal sealed class UCodeblock_BreakForLoopTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
             CodeblockSystem system = new CodeblockSystem();
 
-            DebugLogBlock dlb = new DebugLogBlock();
-            dlb.Message = "This should never run.";
+            AssertTestBlock poisonedBlock = new AssertTestBlock();
+            poisonedBlock.Condition = () => false;
 
-            BreakCodeblock bc = new BreakCodeblock();
+            BreakCodeblock breakBlock = new BreakCodeblock();
 
             DynamicInputOperator<int> count = new DynamicInputOperator<int>();
             count.Value = 100;
@@ -141,14 +161,17 @@ namespace UCodeblock.Tests
             ForLoopBlock flb = new ForLoopBlock();
             flb.LoopCount = count;
 
-            flb.Children.InsertItem(bc, null);
-            flb.Children.InsertItem(dlb, bc);
+            flb.Children.InsertItem(breakBlock, null);
+            flb.Children.InsertItem(poisonedBlock, breakBlock);
 
             system.Blocks.InsertItem(flb, null);
 
             return system;
         }
     }
+    /// <summary>
+    /// Checks various arithmetic and logic codeblocks.
+    /// </summary>
     internal sealed class UCodeblock_ArithmeticAndLogicTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
@@ -183,14 +206,19 @@ namespace UCodeblock.Tests
                 Operation = LogicalOperation.OR
             };
 
-            DebugLogBlock dlb = new DebugLogBlock();
-            dlb.Message = "0 <= 2 || 4 == 6  -->  TRUE";
+            AssertTestBlock ifTrue = new AssertTestBlock();
+            ifTrue.Condition = () => true;
 
-            IfBlock ifblock = new IfBlock();
-            ifblock.Condition = logic;
+            AssertTestBlock ifFalse = new AssertTestBlock();
+            ifFalse.Condition = () => false;
 
-            ifblock.Children.InsertItem(dlb, null);
-            system.Blocks.InsertItem(ifblock, null);
+            IfElseBlock ifElseBlock = new IfElseBlock();
+            ifElseBlock.Condition = logic;
+
+            ifElseBlock.Children.InsertItem(ifTrue, null);
+            ifElseBlock.ElseChildren.InsertItem(ifFalse, null);
+
+            system.Blocks.InsertItem(ifElseBlock, null);
 
             return system;
         }

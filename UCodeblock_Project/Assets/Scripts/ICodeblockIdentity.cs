@@ -10,8 +10,17 @@ namespace UCodeblock
     /// </summary>
     public interface ICodeblockIdentity
     {
+        /// <summary>
+        /// The ID of the codeblock.
+        /// </summary>
         string ID { get; }
+        /// <summary>
+        /// The ID of the previous sibling. Empty if no previous sibling exists.
+        /// </summary>
         string FromID { get; set; }
+        /// <summary>
+        /// The ID of the next sibling. Empty if no next sibling exists.
+        /// </summary>
         string ToID { get; set; }
     }
 }

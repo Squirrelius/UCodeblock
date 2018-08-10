@@ -7,13 +7,22 @@ using UnityEngine.EventSystems;
 
 namespace UCodeblock.UI
 {
+    /// <summary>
+    /// Provides methods for displaying a <see cref="CodeblockSystem"/> in the UI.
+    /// </summary>
     public class CodeblockInspectionStructure : MonoBehaviour, IInitializePotentialDragHandler
     {
         public static CodeblockInspectionStructure Instance { get { return _instance; } }
         private static CodeblockInspectionStructure _instance;
 
+        /// <summary>
+        /// The value that the canvas elements should be scaled to be constant in size across screen resolutions.
+        /// </summary>
         public static float CanvasScaleFactor { get; private set; }
 
+        /// <summary>
+        /// The system that is currently being inspected.
+        /// </summary>
         public CodeblockSystem CurrentSystem { get; set; }
 
         private void Awake()
@@ -31,6 +40,10 @@ namespace UCodeblock.UI
             CanvasScaleFactor = CalculateCanvasScaleFactor();
         }
 
+        /// <summary>
+        /// Calculates the scale the child canvas elements should have.
+        /// </summary>
+        /// <returns></returns>
         private float CalculateCanvasScaleFactor ()
         {
             Canvas parent = GetComponentInParent<Canvas>();
@@ -55,11 +68,17 @@ namespace UCodeblock.UI
             eventData.useDragThreshold = false;
         }
 
+        /// <summary>
+        /// Gets the <see cref="UICodeblock"/> of which the drop area overlaps the given rect.
+        /// </summary>
         public UICodeblock GetOverlappingDragArea (Rect check)
         {
             return FindObjectsOfType<UICodeblock>().FirstOrDefault(block => block.GetDropRect().Overlaps(check));
         }
 
+        /// <summary>
+        /// Inserts an item into the codeblock collection, given a previous sibling as a parent. Pass null to set the item as the entry block.
+        /// </summary>
         public void InsertItem (UICodeblock item, UICodeblock previousSibling)
         {
             // Update the codeblock collection
@@ -75,6 +94,10 @@ namespace UCodeblock.UI
             if (children.Length > 0) 
                 PlaceUnderCodeblock(children.First(), item);
         }
+        /// <summary>
+        /// Detaches an item from its parent, inside the collection and in the UI.
+        /// </summary>
+        /// <param name="item"></param>
         public void DetachItem (UICodeblock item)
         {
             // Update the codeblock collection
@@ -86,6 +109,9 @@ namespace UCodeblock.UI
             item.transform.SetParent(transform);
         }
 
+        /// <summary>
+        /// Places a <see cref="UICodeblock"/> under another one.
+        /// </summary>
         private void PlaceUnderCodeblock (UICodeblock item, UICodeblock parent)
         {
             item.transform.SetParent(parent.transform);

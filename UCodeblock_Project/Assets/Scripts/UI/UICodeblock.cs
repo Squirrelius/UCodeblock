@@ -5,10 +5,19 @@ using TMPro;
 
 namespace UCodeblock.UI
 {
+    /// <summary>
+    /// Represents a block that is visualized in the UI.
+    /// </summary>
     public class UICodeblock : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
     {
+        /// <summary>
+        /// The source codeblock item. Null if this is an entry block.
+        /// </summary>
         public CodeblockItem Source { get; set; }
-        public bool IsEntryBlock { get; set; }
+        /// <summary>
+        /// Is this an entry block?
+        /// </summary>
+        public bool IsEntryBlock { get; private set; }
 
         private RectTransform _transform;
         private TextMeshProUGUI _content;
@@ -87,6 +96,10 @@ namespace UCodeblock.UI
             return new Rect(topLeft, scaledSize);
         }
 
+        /// <summary>
+        /// Dynamically generates a <see cref="UICodeblock"/>.
+        /// </summary>
+        /// <param name="source">The source of the codeblock.</param>
         public static UICodeblock Generate(CodeblockItem source)
         {
             GameObject block = new GameObject($"Dynamic UI Codeblock ({ source.Identity.ID }");
@@ -99,6 +112,10 @@ namespace UCodeblock.UI
 
             return codeblock;
         }
+        /// <summary>
+        /// Dynamically generates an entry block.
+        /// </summary>
+        /// <returns></returns>
         public static UICodeblock GenerateEntryBlock ()
         {
             GameObject block = new GameObject($"UI Entry Codeblock");
@@ -179,16 +196,6 @@ namespace UCodeblock.UI
             content.transform.SetParent(transform, false);
 
             return content;
-
-            //// Layout
-            //text.margin = Vector4.one * 8;
-            //text.alignment = TextAlignmentOptions.MidlineLeft;
-            //
-            //// Auto sizing configuration
-            //text.enableAutoSizing = true;
-            //text.fontSizeMin = 1;
-
-            GenerateFillTransform(content);
             
         }
         private TMP_InputField GenerateInputField ()

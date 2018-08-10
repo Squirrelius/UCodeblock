@@ -2,9 +2,18 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Provides standard logical operations.
+    /// </summary>
     public enum LogicalOperation
     {
+        /// <summary>
+        /// Checks if the left condition and the right condition are BOTH true.
+        /// </summary>
         AND,
+        /// <summary>
+        /// Checks if EITHER the left or the right condition is true.
+        /// </summary>
         OR
     }
 

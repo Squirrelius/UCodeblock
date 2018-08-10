@@ -3,7 +3,7 @@
 namespace UCodeblock
 {
     /// <summary>
-    /// Provides a standard identity, using GUID strings, for a codeblock.
+    /// Provides a standard identity for a codeblock, using GUID strings.
     /// </summary>
     public struct StandardIdentity : ICodeblockIdentity
     {

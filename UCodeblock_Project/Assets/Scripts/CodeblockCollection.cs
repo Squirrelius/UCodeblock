@@ -10,9 +10,9 @@ namespace UCodeblock
     public class CodeblockCollection : IEnumerable<CodeblockItem>
     {
         /// <summary>
-        /// The codeblocks contained in the collection.
+        /// The codeblocks contained in the collection, indexable by their identity ID.
         /// </summary>
-        public List<CodeblockItem> Codeblocks { get; set; }
+        public Dictionary<string, CodeblockItem> Codeblocks { get; set; }
         /// <summary>
         /// The ID of the first codeblock that will be executed in this collection.
         /// </summary>
@@ -23,21 +23,21 @@ namespace UCodeblock
         /// </summary>
         public CodeblockCollection()
         {
-            Codeblocks = new List<CodeblockItem>();
+            Codeblocks = new Dictionary<string, CodeblockItem>();
         }
         /// <summary>
         /// Creates a new instance of a codeblock collection, from a given source.
         /// </summary>
         public CodeblockCollection(IEnumerable<CodeblockItem> source)
         {
-            Codeblocks = new List<CodeblockItem>(source);
+            Codeblocks = source.ToDictionary(item => item.Identity.ID, item => item);
         }
 
         /// <summary>
         /// Returns the codeblock in this collection by its id. Returns null if the ID isn't found.
         /// </summary>
         public CodeblockItem this[string id]
-            => Codeblocks.FirstOrDefault(c => c.Identity.ID == id);
+            => Codeblocks.ContainsKey(id) ? Codeblocks[id] : null;
         
         /// <summary>
         /// Starts the execution of the codeblocks in a coroutine.
@@ -78,18 +78,31 @@ namespace UCodeblock
         }
 
         public IEnumerator<CodeblockItem> GetEnumerator()
-            =>  Codeblocks.GetEnumerator();
+            =>  Codeblocks.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
-        private void Add (object obj)
-            => Codeblocks.Add(obj as CodeblockItem);
+        private void Add(object obj)
+            => Add(obj as CodeblockItem);
+        private void Add(CodeblockItem item)
+            => Codeblocks.Add(item.Identity.ID, item);
+        private void AddRange(CodeblockItem[] items)
+        {
+            foreach (CodeblockItem item in items)
+                Add(item);
+        }
         
+        /// <summary>
+        /// Inserts an item after a previous codeblock.
+        /// </summary>
         public void InsertItem(CodeblockItem item, CodeblockItem prevSibling)
         {
             InsertItemRange(new CodeblockItem[] { item }, prevSibling);
         }
+        /// <summary>
+        /// Inserts a range of items after a previous codeblock.
+        /// </summary>
         public void InsertItemRange(CodeblockItem[] items, CodeblockItem prevSibling)
         {
             // Check if there is a previous sibling:
@@ -101,10 +114,13 @@ namespace UCodeblock
 
             InsertItemRangeBetween(items, prevSibling, nextSibling);
         }
+        /// <summary>
+        /// Inserts a range of items between two codeblocks.
+        /// </summary>
         private void InsertItemRangeBetween (CodeblockItem[] items, CodeblockItem prevSibling, CodeblockItem nextSibling)
         {
             // Add the item to the collection
-            Codeblocks.AddRange(items);
+            AddRange(items);
 
             CodeblockItem first = items.First(),
                           last = items.Last();
@@ -133,10 +149,16 @@ namespace UCodeblock
             }
         }
 
+        /// <summary>
+        /// Detaches an item from its previous sibling.
+        /// </summary>
         public void DetachItem (CodeblockItem item)
         {
             DetachItemRange(new CodeblockItem[] { item });
         }
+        /// <summary>
+        /// Detaches a range of items from the previous sibling.
+        /// </summary>
         public void DetachItemRange (CodeblockItem[] items)
         {
             CodeblockItem first = items.First(),
@@ -152,6 +174,9 @@ namespace UCodeblock
 
             DetachItemRangeFrom(items, prev, next);
         }
+        /// <summary>
+        /// Detaches a range of items from the previous sibling and the next sibling.
+        /// </summary>
         private void DetachItemRangeFrom (CodeblockItem[] items, CodeblockItem prevSibling, CodeblockItem nextSibling)
         {
             CodeblockItem first = items.First(),

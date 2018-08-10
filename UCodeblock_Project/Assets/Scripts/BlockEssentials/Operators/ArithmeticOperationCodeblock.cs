@@ -2,11 +2,26 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Provides standard arithmetic operations.
+    /// </summary>
     public enum ArithmeticOperation
     {
+        /// <summary>
+        /// Adds two numbers together.
+        /// </summary>
         Add,
+        /// <summary>
+        /// Subtracts the right number from the left number.
+        /// </summary>
         Subtract,
+        /// <summary>
+        /// Multiplies two numbers together.
+        /// </summary>
         Multiply,
+        /// <summary>
+        /// Divides the left number by the right number;
+        /// </summary>
         Divide
     }
 

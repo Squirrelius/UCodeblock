@@ -2,6 +2,9 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Skips the next elements in the loop (for, while, while-true) and starts over.
+    /// </summary>
     public sealed class ContinueCodeblock : CodeblockItem, IExecuteableCodeblock
     {
         public IEnumerator Execute(ICodeblockExecutionContext context)

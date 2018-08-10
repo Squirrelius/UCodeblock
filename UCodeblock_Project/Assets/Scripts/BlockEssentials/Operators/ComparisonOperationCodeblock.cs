@@ -2,12 +2,30 @@
 
 namespace UCodeblock
 {
+    /// <summary>
+    /// Provides standard comparison operations.
+    /// </summary>
     public enum ComparisonOperation
     {
+        /// <summary>
+        /// Checks if the left value and the right value are identical.
+        /// </summary>
         Equal,
+        /// <summary>
+        /// Checks if the left value is smaller than the right value.
+        /// </summary>
         SmallerThan,
+        /// <summary>
+        /// Checks if the left value is greater than the right value.
+        /// </summary>
         GreaterThan,
+        /// <summary>
+        /// Checks if the left value is smaller than or equal to the right value.
+        /// </summary>
         SmallerOrEqual,
+        /// <summary>
+        /// Checks if the left value is greater than or equal to the right value.
+        /// </summary>
         GreaterOrEqual
     }
 
