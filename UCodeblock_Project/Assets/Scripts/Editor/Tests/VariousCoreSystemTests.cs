@@ -35,7 +35,7 @@ namespace UCodeblock.Tests
     /// <summary>
     /// The base class for <see cref="CodeblockSystem"/> tests.
     /// </summary>
-    public abstract class UCodeblock_TestBase : MonoBehaviour, IMonoBehaviourTest
+    internal abstract class UCodeblock_TestBase : MonoBehaviour, IMonoBehaviourTest
     {
         private bool _isDone;
         public bool IsTestFinished => _isDone;
@@ -70,7 +70,7 @@ namespace UCodeblock.Tests
         }
     }
 
-    public sealed class UCodeblock_ForLoopTest : UCodeblock_TestBase
+    internal sealed class UCodeblock_ForLoopTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
@@ -85,16 +85,13 @@ namespace UCodeblock.Tests
             ForLoopBlock flb = new ForLoopBlock();
             flb.LoopCount = count;
 
-            flb.Children.Codeblocks.Add(dlb);
-            flb.Children.EntryID = dlb.Identity.ID;
-
-            system.Blocks.Codeblocks.Add(flb);
-            system.Blocks.EntryID = flb.Identity.ID;
+            system.Blocks.InsertItem(flb, null);
+            flb.Children.InsertItem(dlb, null);
 
             return system;
         }
     }
-    public sealed class UCodeblock_IfElseConditionTest : UCodeblock_TestBase
+    internal sealed class UCodeblock_IfElseConditionTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
@@ -118,18 +115,16 @@ namespace UCodeblock.Tests
 
             IfElseBlock ifelse = new IfElseBlock();
             ifelse.Condition = coc;
-            ifelse.Children.Codeblocks.Add(ifTrue);
-            ifelse.Children.EntryID = ifTrue.Identity.ID;
-            ifelse.ElseChildren.Codeblocks.Add(ifFalse);
-            ifelse.ElseChildren.EntryID = ifFalse.Identity.ID;
 
-            system.Blocks.Codeblocks.Add(ifelse);
-            system.Blocks.EntryID = ifelse.Identity.ID;
+            ifelse.Children.InsertItem(ifTrue, null);
+            ifelse.ElseChildren.InsertItem(ifFalse, null);
+
+            system.Blocks.InsertItem(ifelse, null);
 
             return system;
         }
     }
-    public sealed class UCodeblock_BreakForLoopTest : UCodeblock_TestBase
+    internal sealed class UCodeblock_BreakForLoopTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
@@ -139,8 +134,6 @@ namespace UCodeblock.Tests
             dlb.Message = "This should never run.";
 
             BreakCodeblock bc = new BreakCodeblock();
-            bc.Identity.ToID = dlb.Identity.ID;
-            dlb.Identity.FromID = bc.Identity.ID;
 
             DynamicInputOperator<int> count = new DynamicInputOperator<int>();
             count.Value = 100;
@@ -148,17 +141,15 @@ namespace UCodeblock.Tests
             ForLoopBlock flb = new ForLoopBlock();
             flb.LoopCount = count;
 
-            flb.Children.Codeblocks.Add(dlb);
-            flb.Children.Codeblocks.Add(bc);
-            flb.Children.EntryID = bc.Identity.ID;
+            flb.Children.InsertItem(bc, null);
+            flb.Children.InsertItem(dlb, bc);
 
-            system.Blocks.Codeblocks.Add(flb);
-            system.Blocks.EntryID = flb.Identity.ID;
+            system.Blocks.InsertItem(flb, null);
 
             return system;
         }
     }
-    public sealed class UCodeblock_ArithmeticAndLogicTest : UCodeblock_TestBase
+    internal sealed class UCodeblock_ArithmeticAndLogicTest : UCodeblock_TestBase
     {
         protected override CodeblockSystem BuildSystem()
         {
@@ -196,12 +187,10 @@ namespace UCodeblock.Tests
             dlb.Message = "0 <= 2 || 4 == 6  -->  TRUE";
 
             IfBlock ifblock = new IfBlock();
-            ifblock.Children.Codeblocks.Add(dlb);
-            ifblock.Children.EntryID = dlb.Identity.ID;
             ifblock.Condition = logic;
 
-            system.Blocks.Codeblocks.Add(ifblock);
-            system.Blocks.EntryID = ifblock.Identity.ID;
+            ifblock.Children.InsertItem(dlb, null);
+            system.Blocks.InsertItem(ifblock, null);
 
             return system;
         }

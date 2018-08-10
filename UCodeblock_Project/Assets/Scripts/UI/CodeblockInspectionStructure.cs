@@ -67,9 +67,13 @@ namespace UCodeblock.UI
             blocks.AddRange(item.GetComponentsInChildren<UICodeblock>());
             CurrentSystem.Blocks.InsertItemRange(blocks.Select(b => b.Source).ToArray(), previousSibling.Source);
 
-            // Then the transform hierarchy
-            item.transform.SetParent(previousSibling.transform);
-            item.transform.localPosition = new Vector3(0, -previousSibling.GetComponent<RectTransform>().sizeDelta.y);
+            // Update the transform hierarchy
+            PlaceUnderCodeblock(item, previousSibling);
+
+            UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
+            // If the previous sibling has any children, insert the item between the previous sibling and its children
+            if (children.Length > 0) 
+                PlaceUnderCodeblock(children.First(), item);
         }
         public void DetachItem (UICodeblock item)
         {
@@ -78,8 +82,14 @@ namespace UCodeblock.UI
             blocks.AddRange(item.GetComponentsInChildren<UICodeblock>());
             CurrentSystem.Blocks.DetachItemRange(blocks.Select(b => b.Source).ToArray());
 
-            // Then the transform hierarchy
+            // Update the transform hierarchy
             item.transform.SetParent(transform);
+        }
+
+        private void PlaceUnderCodeblock (UICodeblock item, UICodeblock parent)
+        {
+            item.transform.SetParent(parent.transform);
+            item.transform.localPosition = new Vector3(0, -parent.GetComponent<RectTransform>().sizeDelta.y);
         }
     }
 }

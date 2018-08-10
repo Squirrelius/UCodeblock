@@ -140,7 +140,6 @@ namespace UCodeblock.UI
             {
                 SetupBlockTransform(DefaultBlockSize);
                 GenerateMainPart(Color.red);
-                GenerateInputField();
             }
         }
 
@@ -172,23 +171,25 @@ namespace UCodeblock.UI
             return rt;
         }
 
-        private TextMeshProUGUI GenerateBlockContent ()
+        private GameObject GenerateBlockContent ()
         {
-            GameObject content = new GameObject("content");
-            TextMeshProUGUI text = content.AddComponent<TextMeshProUGUI>();
-            text.SetText(Source.Content);
+            ContentResolver resolver = new ContentResolver(Source);
+            GameObject content = resolver.Build();
 
-            // Layout
-            text.margin = Vector4.one * 8;
-            text.alignment = TextAlignmentOptions.MidlineLeft;
+            content.transform.SetParent(transform, false);
 
-            // Auto sizing configuration
-            text.enableAutoSizing = true;
-            text.fontSizeMin = 1;
+            return content;
+
+            //// Layout
+            //text.margin = Vector4.one * 8;
+            //text.alignment = TextAlignmentOptions.MidlineLeft;
+            //
+            //// Auto sizing configuration
+            //text.enableAutoSizing = true;
+            //text.fontSizeMin = 1;
 
             GenerateFillTransform(content);
-
-            return text;
+            
         }
         private TMP_InputField GenerateInputField ()
         {

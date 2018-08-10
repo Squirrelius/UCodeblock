@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using System.Collections;
 
 namespace UCodeblock
 {
@@ -11,7 +12,7 @@ namespace UCodeblock
 
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
-            UnityEngine.Debug.Log(Message);
+            Debug.Log(Message);
             yield return null;
         }
     }

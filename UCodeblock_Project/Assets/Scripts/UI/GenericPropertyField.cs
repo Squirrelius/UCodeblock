@@ -13,7 +13,7 @@ namespace UCodeblock.UI
 
         public static void Generate<TIn>(DynamicInputOperator<TIn> source)
         {
-            GameObject holder = new GameObject("Codeblock Property Field");
+            GameObject holder = new GameObject($"Codeblock Property Field ({ source.Identity.ID })");
             GenericPropertyField<TIn> field = holder.AddComponent<GenericPropertyField<TIn>>();
 
             field.Operator = source;
