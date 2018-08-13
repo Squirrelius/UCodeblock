@@ -82,7 +82,7 @@ namespace UCodeblock.UI
         public void InsertItem (UICodeblock item, UICodeblock previousSibling)
         {
             // Update the codeblock collection
-            List<UICodeblock> blocks = new List<UICodeblock>() { item };
+            List<UICodeblock> blocks = new List<UICodeblock>();
             blocks.AddRange(item.GetComponentsInChildren<UICodeblock>());
             CurrentSystem.Blocks.InsertItemRange(blocks.Select(b => b.Source).ToArray(), previousSibling.Source);
 

@@ -11,27 +11,25 @@ namespace UCodeblock.UI
 {
     public class ContentResolver
     {
-        private readonly Type _codeblockType;
+        private readonly CodeblockItem _source;
+        private readonly Type _sourceType;
         private readonly string _contentString;
 
         public ContentResolver(CodeblockItem block)
         {
-            _codeblockType = block.GetType();
+            _source = block;
+            _sourceType = block.GetType();
             _contentString = block.Content;
         }
 
         public GameObject Build ()
         {
-            var a = _codeblockType.GetProperties();
+            var a = _sourceType.GetProperties();
             var b = a.Where(property => property.GetCustomAttribute<ContentPropertyAttribute>() != null);
             var contentProperties = b.ToDictionary(property => property.GetCustomAttribute<ContentPropertyAttribute>().ContentID, property => property);
 
-            //var contentProperties = _codeblockType.GetProperties(BindingFlags.Instance)
-            //    .Where(property => property.GetCustomAttribute<ContentPropertyAttribute>() != null)
-            //    .ToDictionary(property => property.GetCustomAttribute<ContentPropertyAttribute>().ContentID, property => property);
-
             GameObject holder = new GameObject("content");
-            RectTransform rt = AddOrGetRectTransform(holder);
+            RectTransform rt = EnsureComponent<RectTransform>(holder);
 
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
@@ -80,24 +78,23 @@ namespace UCodeblock.UI
             return holder;
         }
 
-        private static RectTransform AddOrGetRectTransform (GameObject m)
+        private static T EnsureComponent<T>(GameObject m) where T : Component
         {
-            RectTransform rt = m.GetComponent<RectTransform>();
-            if (rt != null) return rt;
-            else return m.AddComponent<RectTransform>();
+            T t = m.GetComponent<T>();
+            if (t != null) return t;
+            else return m.AddComponent<T>();
         }
 
         private static RectTransform BuildFieldForProperty (PropertyInfo p)
         {
-            GameObject textField = new GameObject($"propertyField ({ "" })");
-            RectTransform rt = AddOrGetRectTransform(textField);
+            InputPropertyField input = InputPropertyField.Generate(p);
 
-            return rt;
+            return input.GetComponent<RectTransform>();
         }
         private static RectTransform BuildFieldForString (string s)
         {
             GameObject textField = new GameObject($"textField ({ s })");
-            RectTransform rt = AddOrGetRectTransform(textField);
+            RectTransform rt = EnsureComponent<RectTransform>(textField);
 
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.up;
