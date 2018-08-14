@@ -86,7 +86,10 @@ namespace UCodeblock
         private void Add(object obj)
             => Add(obj as CodeblockItem);
         private void Add(CodeblockItem item)
-            => Codeblocks.Add(item.Identity.ID, item);
+        {
+            if (!Codeblocks.ContainsKey(item.Identity.ID))
+                Codeblocks.Add(item.Identity.ID, item);
+        }
         private void AddRange(CodeblockItem[] items)
         {
             foreach (CodeblockItem item in items)

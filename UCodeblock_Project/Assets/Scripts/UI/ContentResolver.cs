@@ -43,9 +43,8 @@ namespace UCodeblock.UI
             hlg.spacing = 10;
             hlg.padding = new RectOffset(10, 0, 0, 0);
             hlg.childAlignment = TextAnchor.MiddleLeft;
-            hlg.childForceExpandHeight = hlg.childForceExpandWidth = false;
 
-            string m = "";
+            string m = string.Empty;
             string content = _contentString;
             int l = _contentString.Length;
             for (int i = 0; i < l; i++)
@@ -65,13 +64,19 @@ namespace UCodeblock.UI
                     }
                     int id = int.Parse(num);
                     PropertyInfo p = contentProperties[id];
-                    BuildFieldForProperty(p).SetParent(rt);
+                    BuildFieldForProperty(_source, p).SetParent(rt);
                 }
-
-                m += c;
-                if (i + 1 < l && content[i + 1] == '{')
+                else
                 {
-                    BuildFieldForString(m).SetParent(rt);
+                    m += c;
+                    if (i + 1 < l && content[i + 1] == '{')
+                    {
+                        if (m != string.Empty)
+                        {
+                            BuildFieldForString(m).SetParent(rt);
+                            m = string.Empty;
+                        }
+                    }
                 }
             }
 
@@ -85,9 +90,9 @@ namespace UCodeblock.UI
             else return m.AddComponent<T>();
         }
 
-        private static RectTransform BuildFieldForProperty (PropertyInfo p)
+        private static RectTransform BuildFieldForProperty (CodeblockItem source, PropertyInfo p)
         {
-            InputPropertyField input = InputPropertyField.Generate(p);
+            InputPropertyField input = InputPropertyField.Generate(source, p);
 
             return input.GetComponent<RectTransform>();
         }
@@ -105,6 +110,10 @@ namespace UCodeblock.UI
             tmp.fontSize = 40;
             tmp.alignment = TextAlignmentOptions.MidlineLeft;
             tmp.SetText(s);
+
+            // Add a CanvasGroup to let the object ignore raycasts
+            CanvasGroup cg = textField.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = false;
 
             return rt;
         }
