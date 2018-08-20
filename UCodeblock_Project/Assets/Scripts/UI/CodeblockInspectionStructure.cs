@@ -16,11 +16,6 @@ namespace UCodeblock.UI
         private static CodeblockInspectionStructure _instance;
 
         /// <summary>
-        /// The value that the canvas elements should be scaled to be constant in size across screen resolutions.
-        /// </summary>
-        public static float CanvasScaleFactor { get; private set; }
-
-        /// <summary>
         /// The system that is currently being inspected.
         /// </summary>
         public CodeblockSystem CurrentSystem { get; set; }
@@ -34,23 +29,6 @@ namespace UCodeblock.UI
 
             // for testing only
             CurrentSystem = new CodeblockSystem();
-        }
-        private void Start()
-        {
-            CanvasScaleFactor = CalculateCanvasScaleFactor();
-        }
-
-        /// <summary>
-        /// Calculates the scale the child canvas elements should have.
-        /// </summary>
-        /// <returns></returns>
-        private float CalculateCanvasScaleFactor ()
-        {
-            Canvas parent = GetComponentInParent<Canvas>();
-            Transform t = parent.GetComponent<RectTransform>();
-            Vector3 scale = t.localScale;
-            float avg = (scale.x + scale.y + scale.z) / 3f;
-            return avg;
         }
 
         private void Update()
@@ -71,7 +49,7 @@ namespace UCodeblock.UI
         /// <summary>
         /// Gets the <see cref="UICodeblock"/> of which the drop area overlaps the given rect.
         /// </summary>
-        public UICodeblock GetOverlappingDragArea (Rect check)
+        public UICodeblock GetBlockInDropArea (Rect check)
         {
             return FindObjectsOfType<UICodeblock>().FirstOrDefault(block => block.GetDropRect().Overlaps(check));
         }
@@ -91,8 +69,14 @@ namespace UCodeblock.UI
 
             UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
             // If the previous sibling has any children, insert the item between the previous sibling and its children
-            if (children.Length > 0) 
-                PlaceUnderCodeblock(children.First(), item);
+            if (children.Length > 0)
+            {
+                UICodeblock child = children.First();
+                if (item != child)
+                {
+                    PlaceUnderCodeblock(child, item);
+                }
+            }
         }
         /// <summary>
         /// Detaches an item from its parent, inside the collection and in the UI.
@@ -114,8 +98,11 @@ namespace UCodeblock.UI
         /// </summary>
         private void PlaceUnderCodeblock (UICodeblock item, UICodeblock parent)
         {
+            float yPos = -parent.GetComponent<RectTransform>().sizeDelta.y;
+            print(parent + ": " + yPos);
+
             item.transform.SetParent(parent.transform);
-            item.transform.localPosition = new Vector3(0, -parent.GetComponent<RectTransform>().sizeDelta.y);
+            item.transform.localPosition = new Vector3(0, yPos);
         }
     }
 }

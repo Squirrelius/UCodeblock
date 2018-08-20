@@ -7,10 +7,8 @@ namespace UCodeblock
     {
         [ContentProperty(0)]
         public string Message { get; set; }
-        [ContentProperty(1)]
-        public int ID { get; set; }
 
-        public override string Content => "Print {0}{1}.";
+        public override string Content => "Print {0}.";
 
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
