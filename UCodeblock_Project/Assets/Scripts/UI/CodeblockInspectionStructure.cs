@@ -10,10 +10,12 @@ namespace UCodeblock.UI
     /// <summary>
     /// Provides methods for displaying a <see cref="CodeblockSystem"/> in the UI.
     /// </summary>
-    public class CodeblockInspectionStructure : MonoBehaviour, IInitializePotentialDragHandler
+    public class CodeblockInspectionStructure : MonoBehaviour, IDragHandler, IInitializePotentialDragHandler
     {
         public static CodeblockInspectionStructure Instance { get { return _instance; } }
         private static CodeblockInspectionStructure _instance;
+
+        private Transform _handle;
 
         /// <summary>
         /// The system that is currently being inspected.
@@ -26,9 +28,14 @@ namespace UCodeblock.UI
                 _instance = this;
             else
                 Destroy(gameObject);
+        }
 
+        private void Start()
+        {
             // for testing only
             CurrentSystem = new CodeblockSystem();
+
+            _handle = transform.GetChild(0);
         }
 
         private void Update()
@@ -44,6 +51,13 @@ namespace UCodeblock.UI
         public void OnInitializePotentialDrag(PointerEventData eventData)
         {
             eventData.useDragThreshold = false;
+        }
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Middle) // If the left button was clicked, drag the codeblock
+            {
+                _handle.position += (Vector3)eventData.delta;
+            }
         }
 
         /// <summary>
@@ -67,14 +81,14 @@ namespace UCodeblock.UI
             // Update the transform hierarchy
             PlaceUnderCodeblock(item, previousSibling);
 
-            UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
+            UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Where(child => child != item).Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
             // If the previous sibling has any children, insert the item between the previous sibling and its children
             if (children.Length > 0)
             {
-                UICodeblock child = children.First();
-                if (item != child)
+                PlaceUnderCodeblock(children[0], item);
+                for(int i = 1; i < children.Length; i++)
                 {
-                    PlaceUnderCodeblock(child, item);
+                    PlaceUnderCodeblock(children[i], children[i - 1]);
                 }
             }
         }
@@ -90,7 +104,8 @@ namespace UCodeblock.UI
             CurrentSystem.Blocks.DetachItemRange(blocks.Select(b => b.Source).ToArray());
 
             // Update the transform hierarchy
-            item.transform.SetParent(transform);
+            item.transform.SetParent(_handle);
+            item.PositionController.TargetLocalPosition = item.PositionController.LocalPosition;
         }
 
         /// <summary>
@@ -99,10 +114,10 @@ namespace UCodeblock.UI
         private void PlaceUnderCodeblock (UICodeblock item, UICodeblock parent)
         {
             float yPos = -parent.GetComponent<RectTransform>().sizeDelta.y;
-            print(parent + ": " + yPos);
 
             item.transform.SetParent(parent.transform);
-            item.transform.localPosition = new Vector3(0, yPos);
+            item.PositionController.TargetLocalPosition = new Vector3(0, yPos);
+            //item.transform.localPosition = new Vector3(0, yPos);
         }
     }
 }

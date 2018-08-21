@@ -91,7 +91,7 @@ namespace UCodeblock.UI
 
         private GameObject ResolveString(string value)
         {
-            Debug.Log("Resolving string: " + value);
+            //Debug.Log("Resolving string: " + value);
 
             GameObject prefab = Resources.Load<GameObject>("Codeblock_Content_Text");
             GameObject textObject = GameObject.Instantiate(prefab);
@@ -103,9 +103,21 @@ namespace UCodeblock.UI
         }
         private GameObject ResolveProperty(PropertyInfo property)
         {
-            Debug.Log("Resolving property: " + property.PropertyType);
+            //Debug.Log("Resolving property: " + property.PropertyType);
 
-            return new GameObject();
+            GameObject prefab = Resources.Load<GameObject>("Codeblock_Content_Input");
+            GameObject inputObject = GameObject.Instantiate(prefab);
+
+            InputContent content = inputObject.GetComponent<InputContent>();
+            content.Property = property;
+            content.ReferenceObject = _item;
+
+            return inputObject;
+        }
+
+        public float MeasureContentWidth (Transform content)
+        {
+            return content.GetComponentsInChildren<CodeblockContent>().Sum(c => c.PreferredSize.x);
         }
 
         private static Dictionary<int, PropertyInfo> GeneratePropertyLookup (Type target)

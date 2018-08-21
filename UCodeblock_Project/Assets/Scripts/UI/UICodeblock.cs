@@ -26,6 +26,9 @@ namespace UCodeblock.UI
         /// The source codeblock item. Null if this is an entry block.
         /// </summary>
         public CodeblockItem Source { get; set; }
+
+        public LocalPositionController PositionController { get; set; }
+
         /// <summary>
         /// The type of the underlying <see cref="CodeblockItem"/>.
         /// </summary>
@@ -43,39 +46,52 @@ namespace UCodeblock.UI
             _transform = GetComponent<RectTransform>();
             _layout = GetComponent<LayoutElement>();
 
+            PositionController = new LocalPositionController(transform, 0.1f);
+
             GenerateContent();
+        }
+
+        private void Update()
+        {
+            PositionController.UpdatePosition();
         }
 
         public virtual void OnDrag(PointerEventData eventData)
         {
-            _transform.position += (Vector3)eventData.delta;
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                PositionController.LocalPosition += (Vector3)eventData.delta;
+                PositionController.TargetLocalPosition = PositionController.LocalPosition;
+            }
         }
         public virtual void OnPointerDown(PointerEventData eventData)
         {
         }
         public virtual void OnPointerUp(PointerEventData eventData)
         {
-            if (!IsEntryBlock)
+            if (eventData.button == PointerEventData.InputButton.Left)
             {
-                if (Type == UIBlockType.Executable)
+                if (!IsEntryBlock)
                 {
-                    UICodeblock dropped = CodeblockInspectionStructure.Instance.GetBlockInDropArea(_transform.GetWorldRect());
-
-                    if (dropped != null)
+                    if (Type == UIBlockType.Executable)
                     {
-                        if (dropped != this)
+                        UICodeblock dropped = CodeblockInspectionStructure.Instance.GetBlockInDropArea(_transform.GetWorldRect());
+
+                        if (dropped != null)
                         {
-                            CodeblockInspectionStructure.Instance.InsertItem(this, dropped);
+                            if (dropped != this)
+                            {
+                                if (dropped.Type == UIBlockType.Executable || dropped.Type == UIBlockType.Entry || dropped.Type == UIBlockType.ControlFlow)
+                                {
+                                    CodeblockInspectionStructure.Instance.InsertItem(this, dropped);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            CodeblockInspectionStructure.Instance.DetachItem(this);
                         }
                     }
-                    else
-                    {
-                        CodeblockInspectionStructure.Instance.DetachItem(this);
-                    }
-                }
-                else
-                {
-
                 }
             }
         }
@@ -105,9 +121,17 @@ namespace UCodeblock.UI
         {
             if (Source == null) return;
 
-            new ContentResolver(Source).ResolveInto(_transform.Find("content"));
+            RectTransform content = _transform.Find("content").GetComponent<RectTransform>();
+
+            ContentResolver resolver = new ContentResolver(Source);
+            resolver.ResolveInto(content);
         }
 
+        /// <summary>
+        /// Dynamically generates a UI codeblock.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static UICodeblock Generate(CodeblockItem source)
         {
             UIBlockType type = GetBlockType(source);
