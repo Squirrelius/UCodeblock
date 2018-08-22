@@ -75,15 +75,15 @@ namespace UCodeblock.UI
                 {
                     if (Type == UIBlockType.Executable)
                     {
-                        UICodeblock dropped = CodeblockInspectionStructure.Instance.GetBlockInDropArea(_transform.GetWorldRect());
+                        UICodeblock blockInDropArea = CodeblockInspectionStructure.Instance.GetBlockInDropArea(_transform.GetWorldRect());
 
-                        if (dropped != null)
+                        if (blockInDropArea != null)
                         {
-                            if (dropped != this)
+                            if (blockInDropArea != this)
                             {
-                                if (dropped.Type == UIBlockType.Executable || dropped.Type == UIBlockType.Entry || dropped.Type == UIBlockType.ControlFlow)
+                                if (blockInDropArea.Type == UIBlockType.Executable || blockInDropArea.Type == UIBlockType.Entry || blockInDropArea.Type == UIBlockType.ControlFlow)
                                 {
-                                    CodeblockInspectionStructure.Instance.InsertItem(this, dropped);
+                                    CodeblockInspectionStructure.Instance.InsertItem(this, blockInDropArea);
                                 }
                             }
                         }
@@ -145,7 +145,16 @@ namespace UCodeblock.UI
 
             GameObject blockObject = Instantiate(prefab);
             blockObject.name = name;
+            if (type == UIBlockType.Executable)
+            {
+                LayoutElement layoutForBlock = blockObject.transform.Find("content").gameObject.AddComponent<LayoutElement>();
+                layoutForBlock.minWidth = UCodeBlockSettings.MyInstance._minBlockWidth;
+            }
+            else if (type == UIBlockType.Entry)
+            {
+                blockObject.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, UCodeBlockSettings.MyInstance._minBlockWidth);
 
+            }
             UICodeblock codeblock = blockObject.GetComponent<UICodeblock>();
             codeblock.Source = source;
 
