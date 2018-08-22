@@ -10,15 +10,12 @@ namespace UCodeblock.UI
     /// <summary>
     /// Provides methods for displaying a <see cref="CodeblockSystem"/> in the UI.
     /// </summary>
-    public class CodeblockInspectionStructure : MonoBehaviour, IInitializePotentialDragHandler
+    public class CodeblockInspectionStructure : MonoBehaviour, IDragHandler, IInitializePotentialDragHandler
     {
         public static CodeblockInspectionStructure Instance { get { return _instance; } }
         private static CodeblockInspectionStructure _instance;
 
-        /// <summary>
-        /// The value that the canvas elements should be scaled to be constant in size across screen resolutions.
-        /// </summary>
-        public static float CanvasScaleFactor { get; private set; }
+        private Transform _handle;
 
         /// <summary>
         /// The system that is currently being inspected.
@@ -31,26 +28,14 @@ namespace UCodeblock.UI
                 _instance = this;
             else
                 Destroy(gameObject);
-
-            // for testing only
-            CurrentSystem = new CodeblockSystem();
         }
+
         private void Start()
         {
-            CanvasScaleFactor = CalculateCanvasScaleFactor();
-        }
+            // for testing only
+            CurrentSystem = new CodeblockSystem();
 
-        /// <summary>
-        /// Calculates the scale the child canvas elements should have.
-        /// </summary>
-        /// <returns></returns>
-        private float CalculateCanvasScaleFactor ()
-        {
-            Canvas parent = GetComponentInParent<Canvas>();
-            Transform t = parent.GetComponent<RectTransform>();
-            Vector3 scale = t.localScale;
-            float avg = (scale.x + scale.y + scale.z) / 3f;
-            return avg;
+            _handle = transform.GetChild(0);
         }
 
         private void Update()
@@ -67,11 +52,18 @@ namespace UCodeblock.UI
         {
             eventData.useDragThreshold = false;
         }
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Middle) // If the left button was clicked, drag the codeblock
+            {
+                _handle.position += (Vector3)eventData.delta;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="UICodeblock"/> of which the drop area overlaps the given rect.
         /// </summary>
-        public UICodeblock GetOverlappingDragArea (Rect check)
+        public UICodeblock GetBlockInDropArea (Rect check)
         {
             return FindObjectsOfType<UICodeblock>().FirstOrDefault(block => block.GetDropRect().Overlaps(check));
         }
@@ -89,10 +81,16 @@ namespace UCodeblock.UI
             // Update the transform hierarchy
             PlaceUnderCodeblock(item, previousSibling);
 
-            UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
+            UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Where(child => child != item).Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
             // If the previous sibling has any children, insert the item between the previous sibling and its children
-            if (children.Length > 0) 
-                PlaceUnderCodeblock(children.First(), item);
+            if (children.Length > 0)
+            {
+                PlaceUnderCodeblock(children[0], item);
+                for(int i = 1; i < children.Length; i++)
+                {
+                    PlaceUnderCodeblock(children[i], children[i - 1]);
+                }
+            }
         }
         /// <summary>
         /// Detaches an item from its parent, inside the collection and in the UI.
@@ -106,7 +104,8 @@ namespace UCodeblock.UI
             CurrentSystem.Blocks.DetachItemRange(blocks.Select(b => b.Source).ToArray());
 
             // Update the transform hierarchy
-            item.transform.SetParent(transform);
+            item.transform.SetParent(_handle);
+            item.PositionController.TargetLocalPosition = item.PositionController.LocalPosition;
         }
 
         /// <summary>
@@ -114,8 +113,11 @@ namespace UCodeblock.UI
         /// </summary>
         private void PlaceUnderCodeblock (UICodeblock item, UICodeblock parent)
         {
+            float yPos = -parent.GetComponent<RectTransform>().sizeDelta.y;
+
             item.transform.SetParent(parent.transform);
-            item.transform.localPosition = new Vector3(0, -parent.GetComponent<RectTransform>().sizeDelta.y);
+            item.PositionController.TargetLocalPosition = new Vector3(0, yPos);
+            //item.transform.localPosition = new Vector3(0, yPos);
         }
     }
 }

@@ -12,6 +12,8 @@ namespace UCodeblock.UI
 
             for (int i = 0; i < 3; i++)
                 TestBlockCreation<DebugLogBlock>();
+
+            TestBlockCreation<DiskSpaceBlock>();
         }
 
         private T TestBlockCreation<T>() where T : CodeblockItem
