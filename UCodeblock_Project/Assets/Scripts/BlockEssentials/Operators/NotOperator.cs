@@ -5,7 +5,10 @@
     /// </summary>
     public class NotOperator : CodeblockItem, IDynamicEvaluateableCodeblock, IEvaluateableCodeblock<bool>
     {
+        [ContentProperty(0)]
         public IEvaluateableCodeblock<bool> Argument { get; set; }
+
+        public override string Content => "{0}";
 
         public object EvaluateObject(ICodeblockExecutionContext context)
             => !Argument.Evaluate(context);

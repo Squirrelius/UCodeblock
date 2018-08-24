@@ -7,6 +7,8 @@ namespace UCodeblock
     /// </summary>
     public sealed class BreakCodeblock : CodeblockItem, IExecuteableCodeblock
     {
+        public override string Content => "Break.";
+
         public IEnumerator Execute(ICodeblockExecutionContext context)
         {
             // Try to break out of the top level coroutine

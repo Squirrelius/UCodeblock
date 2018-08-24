@@ -37,10 +37,15 @@ namespace UCodeblock
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(string), typeof(int), typeof(float), typeof(bool) };
 
-        public ComparisonOperation Operation { get; set; }
+        [ContentProperty(1)]
+        public IEvaluateableCodeblock<ComparisonOperation> Operation { get; set; }
 
+        [ContentProperty(0)]
         public IDynamicEvaluateableCodeblock Left { get; set; }
+        [ContentProperty(2)]
         public IDynamicEvaluateableCodeblock Right { get; set; }
+
+        public override string Content => "{0} {1} {2}";
 
         public object EvaluateObject(ICodeblockExecutionContext context)
         {
@@ -51,6 +56,8 @@ namespace UCodeblock
         {
             object l = Left.EvaluateObject(context),
                    r = Right.EvaluateObject(context);
+
+            ComparisonOperation operation = Operation.Evaluate(context);
 
             // This requires some handling of edge cases:
 
@@ -82,7 +89,7 @@ namespace UCodeblock
                 if (r is int) rhs = (int)r;
                 if (r is float) rhs = (float)r;
 
-                switch (Operation)
+                switch (operation)
                 {
                     case ComparisonOperation.Equal:
                         return UnityEngine.Mathf.Approximately(lhs, rhs);
@@ -95,7 +102,7 @@ namespace UCodeblock
                     case ComparisonOperation.GreaterOrEqual:
                         return lhs >= rhs;
 
-                    default: throw new Exception($"Invalid comparison operation selected. (ID: { (int)Operation })");
+                    default: throw new Exception($"Invalid comparison operation selected. (ID: { (int)operation })");
                 }
             }
             
@@ -104,7 +111,7 @@ namespace UCodeblock
 
             if (l is string && r is string)
             {
-                if (Operation == ComparisonOperation.Equal)
+                if (operation == ComparisonOperation.Equal)
                     return ((l as string) == (r as string));
                 else
                     throw new Exception($"When comparing two strings, no other operation than Equals should be allowed.");
@@ -114,7 +121,7 @@ namespace UCodeblock
 
             if(l is bool && r is bool)
             {
-                if (Operation == ComparisonOperation.Equal)
+                if (operation == ComparisonOperation.Equal)
                     return (bool)l == (bool)r;
                 else
                     throw new Exception($"When comparing two booleans, no other operation than Equals should be allowed.");

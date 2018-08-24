@@ -4,18 +4,18 @@ using UnityEngine;
 
 namespace UCodeblock
 {
-    public class UCodeBlockSettings : ScriptableObject
+    public class UCodeblockSettings : ScriptableObject
     {
-        private static UCodeBlockSettings _instance;
-        public static UCodeBlockSettings Instance
+        public static UCodeblockSettings Instance
         {
             get
             {
                 if (_instance == null)
-                    _instance = Resources.Load<UCodeBlockSettings>("UCodeBlockSettings");
+                    _instance = Resources.Load<UCodeblockSettings>("UCodeblockSettings");
                 return _instance;
             }
         }
+        private static UCodeblockSettings _instance;
 
         /// <summary>
         /// Determines the minimum size for executeable and entry blocks.

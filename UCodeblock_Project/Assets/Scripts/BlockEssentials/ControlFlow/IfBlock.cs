@@ -8,8 +8,11 @@ namespace UCodeblock
     /// </summary>
     public class IfBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
+        [ContentProperty(0)]
         public IEvaluateableCodeblock<bool> Condition { get; set; }
         public CodeblockCollection Children { get; set; }
+
+        public override string Content => "If {0} then:";
 
         public IfBlock()
         {

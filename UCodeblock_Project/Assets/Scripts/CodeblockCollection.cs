@@ -62,7 +62,7 @@ namespace UCodeblock
         /// <summary>
         /// Generates the chain of codeblocks that will be executed.
         /// </summary>
-        private Queue<CodeblockItem> BuildCodeblockChain()
+        public Queue<CodeblockItem> BuildCodeblockChain()
         {
             Queue<CodeblockItem> items = new Queue<CodeblockItem>();
             
@@ -72,6 +72,11 @@ namespace UCodeblock
             {
                 items.Enqueue(item);
                 targetId = item.Identity.ToID;
+
+                if (items.Count > 1000000)
+                {
+                    throw new System.Exception("The codeblock chain reached an overflow.");
+                }
             }
 
             return items;

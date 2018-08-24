@@ -125,8 +125,11 @@ namespace UCodeblock.Tests
             var right = new DynamicInputOperator<string>();
             right.Value = "1";
 
+            var operation = new DynamicInputOperator<ComparisonOperation>();
+            operation.Value = ComparisonOperation.GreaterThan;
+
             ComparisonOperationCodeblock coc = new ComparisonOperationCodeblock();
-            coc.Operation = ComparisonOperation.GreaterThan;
+            coc.Operation = operation;
             coc.Left = left;
             coc.Right = right;
 
@@ -186,24 +189,31 @@ namespace UCodeblock.Tests
                 inputs[i] = input;
             }
 
+            var c1 = new DynamicInputOperator<ComparisonOperation>();
+            c1.Value = ComparisonOperation.SmallerOrEqual;
+            var c2 = new DynamicInputOperator<ComparisonOperation>();
+            c2.Value = ComparisonOperation.Equal;
+            var c3 = new DynamicInputOperator<LogicalOperation>();
+            c3.Value = LogicalOperation.OR;
+
             ComparisonOperationCodeblock left = new ComparisonOperationCodeblock()
             {
                 Left = inputs[0],
                 Right = inputs[1],
-                Operation = ComparisonOperation.SmallerOrEqual
+                Operation = c1
             };
             ComparisonOperationCodeblock right = new ComparisonOperationCodeblock()
             {
                 Left = inputs[2],
                 Right = inputs[3],
-                Operation = ComparisonOperation.Equal
+                Operation = c2
             };
 
             LogicOperationCodeblock logic = new LogicOperationCodeblock()
             {
                 Left = left,
                 Right = right,
-                Operation = LogicalOperation.OR
+                Operation = c3
             };
 
             AssertTestBlock ifTrue = new AssertTestBlock();

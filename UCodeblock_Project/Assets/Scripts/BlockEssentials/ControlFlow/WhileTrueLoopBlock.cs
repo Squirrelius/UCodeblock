@@ -10,6 +10,8 @@ namespace UCodeblock
     {
         public CodeblockCollection Children { get; set; }
 
+        public override string Content => "Run this forever:";
+
         public WhileTrueLoopBlock()
         {
             Children = new CodeblockCollection();

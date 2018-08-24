@@ -5,6 +5,9 @@ namespace UCodeblock.UI
 {
     public static class UICanvasExtensions
     {
+        /// <summary>
+        /// Returns the rectangle that this <see cref="RectTransform"/> takes up (in world space).
+        /// </summary>
         public static Rect GetWorldRect (this RectTransform rect)
         {
             // Calculate the top left corner

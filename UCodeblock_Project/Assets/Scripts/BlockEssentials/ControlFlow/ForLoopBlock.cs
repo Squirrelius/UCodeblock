@@ -8,8 +8,11 @@ namespace UCodeblock
     /// </summary>
     public class ForLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
+        [ContentProperty(0)]
         public IEvaluateableCodeblock<int> LoopCount { get; set; }
         public CodeblockCollection Children { get; set; }
+
+        public override string Content => "For {0} times, do:";
 
         public ForLoopBlock()
         {

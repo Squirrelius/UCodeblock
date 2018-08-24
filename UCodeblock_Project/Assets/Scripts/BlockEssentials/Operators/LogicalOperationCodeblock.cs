@@ -20,29 +20,40 @@ namespace UCodeblock
     /// <summary>
     /// Provides logical boolean operators such as AND and OR.
     /// </summary>
-    public class LogicOperationCodeblock : CodeblockItem, IEvaluateableCodeblock<bool>, IOperationalCodeblock<bool>
+    public class LogicOperationCodeblock : CodeblockItem, IDynamicEvaluateableCodeblock, IEvaluateableCodeblock<bool>, IOperationalCodeblock<bool>
     {
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(bool) };
 
-        public LogicalOperation Operation { get; set; }
+        [ContentProperty(1)]
+        public IEvaluateableCodeblock<LogicalOperation> Operation { get; set; }
 
+        [ContentProperty(0)]
         public IDynamicEvaluateableCodeblock Left { get; set; }
+        [ContentProperty(2)]
         public IDynamicEvaluateableCodeblock Right { get; set; }
+
+        public override string Content => "{0} {1} {2}";
+
+        public object EvaluateObject(ICodeblockExecutionContext context)
+        {
+            return Evaluate(context);
+        }
 
         public bool Evaluate(ICodeblockExecutionContext context)
         {
             bool l = (bool)Left.EvaluateObject(context),
                  r = (bool)Right.EvaluateObject(context);
 
-            switch (Operation)
+            LogicalOperation operation = Operation.Evaluate(context);
+            switch (operation)
             {
                 case LogicalOperation.AND:
                     return l && r;
                 case LogicalOperation.OR:
                     return l || r;
 
-                default: throw new Exception($"Invalid logical operation selected. (ID: { (int)Operation })");
+                default: throw new Exception($"Invalid logical operation selected. (ID: { (int)operation })");
             }
         }
 

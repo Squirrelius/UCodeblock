@@ -7,21 +7,33 @@ using UnityEngine;
 
 namespace UCodeblock.UI
 {
+    /// <summary>
+    /// Used to resolve the content strings of a <see cref="CodeblockItem"/>.
+    /// </summary>
     public class ContentResolver
     {
         private readonly CodeblockItem _item;
 
+        /// <summary>
+        /// Generates a new instance of a <see cref="ContentResolver"/>, with the specified <see cref="CodeblockItem"/> as a target.
+        /// </summary>
         public ContentResolver(CodeblockItem target)
         {
             _item = target;
         }
 
+        /// <summary>
+        /// Resolves the content string into the specified parent.
+        /// </summary>
         public void ResolveInto (Transform parent)
         {
+            // The string that will be resolved
             string content = _item.Content;
-
+            // The property lookup, to match PropertyInfos with the content IDs
             var lookup = GeneratePropertyLookup(_item.GetType());
 
+            // Go through the entire string, character by character, and parse text into text
+            // and content IDs into input contents.
             char c = '\0';
             int i = 0;
             int length = content.Length;
@@ -90,6 +102,9 @@ namespace UCodeblock.UI
             }
         }
 
+        /// <summary>
+        /// Resolves a string into a <see cref="TextContent"/>.
+        /// </summary>
         private GameObject ResolveString(string value)
         {
             //Debug.Log("Resolving string: " + value);
@@ -102,6 +117,9 @@ namespace UCodeblock.UI
 
             return textObject;
         }
+        /// <summary>
+        /// Resolves a property into a <see cref="InputContent"/>.
+        /// </summary>
         private GameObject ResolveProperty(PropertyInfo property)
         {
             //Debug.Log("Resolving property: " + property.PropertyType);
@@ -116,11 +134,9 @@ namespace UCodeblock.UI
             return inputObject;
         }
 
-        public float MeasureContentWidth (Transform content)
-        {
-            return content.GetComponentsInChildren<CodeblockContent>().Sum(c => c.PreferredSize.x);
-        }
-
+        /// <summary>
+        /// Generates a lookup of content IDs and matching PropertyInfos.
+        /// </summary>
         private static Dictionary<int, PropertyInfo> GeneratePropertyLookup (Type target)
         {
             return target.GetProperties()

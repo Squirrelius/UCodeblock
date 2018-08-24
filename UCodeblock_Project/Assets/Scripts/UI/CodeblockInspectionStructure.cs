@@ -46,6 +46,17 @@ namespace UCodeblock.UI
                 StandardContext context = new StandardContext(this) { Delay = 0.5f };
                 StartCoroutine(CurrentSystem.Blocks.ExecuteCodeblocks(context));
             }
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                var chain = CurrentSystem.Blocks.BuildCodeblockChain();
+
+                System.Text.StringBuilder builder = new System.Text.StringBuilder();
+
+                builder.AppendLine("Entry ID: " + CurrentSystem.Blocks.EntryID);
+                foreach (CodeblockItem item in chain) builder.AppendLine("> " + item.Identity.ID);
+
+                Debug.Log(builder.ToString());
+            }
         }
 
         public void OnInitializePotentialDrag(PointerEventData eventData)
@@ -79,12 +90,12 @@ namespace UCodeblock.UI
         public void InsertItem (UICodeblock item, UICodeblock previousSibling)
         {
             // Check if the previous sibling has a next sibling
-            var nextSiblings = previousSibling.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UICodeblock.UIBlockType.Executable);
+            var nextSiblings = previousSibling.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UIBlockType.Executable || b.Type == UIBlockType.ControlFlow);
             UICodeblock nextSibling = nextSiblings.Count() > 1 ? nextSiblings.ElementAt(1) : null;
 
             // Update the codeblock collection
             List<UICodeblock> blocks = new List<UICodeblock>();
-            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UICodeblock.UIBlockType.Executable));
+            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UIBlockType.Executable || b.Type == UIBlockType.ControlFlow));
             CurrentSystem.Blocks.InsertItemRange(blocks.Select(b => b.Source).ToArray(), previousSibling.Source);
 
             // Update the transform hierarchy
@@ -101,7 +112,7 @@ namespace UCodeblock.UI
         {
             // Update the codeblock collection
             List<UICodeblock> blocks = new List<UICodeblock>() { item };
-            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UICodeblock.UIBlockType.Executable));
+            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UIBlockType.Executable || b.Type == UIBlockType.ControlFlow));
             CurrentSystem.Blocks.DetachItemRange(blocks.Select(b => b.Source).ToArray());
 
             // Update the transform hierarchy
@@ -125,10 +136,10 @@ namespace UCodeblock.UI
             item.transform.SetParent(content.DropArea);
             item.PositionController.TargetLocalPosition = new Vector3(0, 0);
 
-            RectTransform rt = item.GetComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.sizeDelta = Vector2.zero;
+            //RectTransform rt = item.GetComponent<RectTransform>();
+            //rt.anchorMin = Vector2.zero;
+            //rt.anchorMax = Vector2.one;
+            //rt.sizeDelta = Vector2.zero;
 
             content.UpdateEvaluateableProperty();
         }
@@ -137,7 +148,7 @@ namespace UCodeblock.UI
             item.transform.SetParent(_handle);
             item.PositionController.TargetLocalPosition = item.PositionController.LocalPosition;
 
-            RectTransform rt = item.GetComponent<RectTransform>();
+            //RectTransform rt = item.GetComponent<RectTransform>();
             
             foreach (InputContent content in FindObjectsOfType<InputContent>())
             {

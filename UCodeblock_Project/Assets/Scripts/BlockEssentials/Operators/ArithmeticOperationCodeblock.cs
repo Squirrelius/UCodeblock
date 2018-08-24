@@ -33,10 +33,15 @@ namespace UCodeblock
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(int), typeof(float) };
 
-        public ArithmeticOperation Operation { get; set; }
+        [ContentProperty(1)]
+        public IEvaluateableCodeblock<ArithmeticOperation> Operation { get; set; }
 
+        [ContentProperty(0)]
         public IDynamicEvaluateableCodeblock Left { get; set; }
+        [ContentProperty(2)]
         public IDynamicEvaluateableCodeblock Right { get; set; }
+
+        public override string Content => "{0} {1} {2}";
 
         public object EvaluateObject(ICodeblockExecutionContext context)
         {
@@ -56,7 +61,8 @@ namespace UCodeblock
             if (r is int) rhs = (int)r;
             if (r is float) rhs = (float)r;
 
-            switch (Operation)
+            ArithmeticOperation operation = Operation.Evaluate(context);
+            switch (operation)
             {
                 case ArithmeticOperation.Add:
                     return lhs + rhs;
@@ -67,7 +73,7 @@ namespace UCodeblock
                 case ArithmeticOperation.Divide:
                     return lhs / rhs;
 
-                default: throw new Exception($"Invalid arithmetic operation selected. (ID: { (int)Operation })");
+                default: throw new Exception($"Invalid arithmetic operation selected. (ID: { (int)operation })");
             }
         }
 

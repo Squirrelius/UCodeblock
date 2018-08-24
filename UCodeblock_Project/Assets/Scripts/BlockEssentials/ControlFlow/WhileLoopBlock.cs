@@ -8,8 +8,11 @@ namespace UCodeblock
     /// </summary>
     public class WhileLoopBlock : CodeblockItem, IExecuteableCodeblock, IControlFlowBlock
     {
+        [ContentProperty(0)]
         public IEvaluateableCodeblock<bool> Condition { get; set; }
         public CodeblockCollection Children { get; set; }
+
+        public override string Content => "While {0} do:";
 
         public WhileLoopBlock()
         {

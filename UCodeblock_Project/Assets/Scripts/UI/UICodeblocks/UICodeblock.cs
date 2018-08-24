@@ -7,27 +7,29 @@ using UnityEngine.EventSystems;
 namespace UCodeblock.UI
 {
     /// <summary>
+    /// Indicates the type of a <see cref="UICodeblock"/>.
+    /// </summary>
+    public enum UIBlockType
+    {
+        Executable,
+        Evaluateable,
+        Entry,
+        ControlFlow,
+        Unknown
+    }
+
+    /// <summary>
     /// Represents a block that is visualized in the UI.
     /// </summary>
     public class UICodeblock : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
     {
         /// <summary>
-        /// Indicates the type of a <see cref="UICodeblock"/>.
-        /// </summary>
-        public enum UIBlockType
-        {
-            Executable,
-            Evaluateable,
-            Entry,
-            ControlFlow,
-            Unknown
-        }
-
-        /// <summary>
         /// The source codeblock item. Null if this is an entry block.
         /// </summary>
         public CodeblockItem Source { get; set; }
-
+        /// <summary>
+        /// The position controller of the item.
+        /// </summary>
         public LocalPositionController PositionController { get; set; }
 
         /// <summary>
@@ -37,11 +39,13 @@ namespace UCodeblock.UI
 
         protected RectTransform _transform;
         protected LayoutElement _layout;
+        protected RectTransform _content;
 
         private void Start()
         {
             _transform = GetComponent<RectTransform>();
             _layout = GetComponent<LayoutElement>();
+            _content = transform.Find("content").GetComponent<RectTransform>();
 
             PositionController = new LocalPositionController(transform, 0.1f);
 
@@ -63,49 +67,9 @@ namespace UCodeblock.UI
         }
         public virtual void OnPointerDown(PointerEventData eventData)
         {
-            if (eventData.button == PointerEventData.InputButton.Left)
-            {
-                if (Type == UIBlockType.Evaluateable)
-                {
-                    CodeblockInspectionStructure.Instance.RemoveFromContent(this);
-                }
-            }
         }
         public virtual void OnPointerUp(PointerEventData eventData)
         {
-            if (eventData.button == PointerEventData.InputButton.Left)
-            {
-                if (Type != UIBlockType.Entry)
-                {
-                    if (Type == UIBlockType.Executable)
-                    {
-                        UICodeblock[] blocksInDropArea = CodeblockInspectionStructure.Instance.GetBlocksInDropArea(_transform.GetWorldRect());
-                        UICodeblock validPreviousSibling = blocksInDropArea.FirstOrDefault(b => b.Type == UIBlockType.Executable || b.Type == UIBlockType.Entry || b.Type == UIBlockType.ControlFlow);
-
-                        if (validPreviousSibling != null)
-                        {
-                            if (validPreviousSibling != this)
-                            {
-                                CodeblockInspectionStructure.Instance.InsertItem(this, validPreviousSibling);
-                            }
-                        }
-                        else
-                        {
-                            CodeblockInspectionStructure.Instance.DetachItem(this);
-                        }
-                    }
-                    if (Type == UIBlockType.Evaluateable)
-                    {
-                        InputContent[] contentsInDropArea = CodeblockInspectionStructure.Instance.GetContentsInDropArea(_transform.GetWorldRect());
-                        InputContent leftmostInput = contentsInDropArea.OrderBy(c => c.transform.position.x).FirstOrDefault();
-
-                        if (leftmostInput != null)
-                        {
-                            CodeblockInspectionStructure.Instance.InsertIntoInputContent(this, leftmostInput);
-                        }
-                    }
-                }
-            }
         }
 
         protected virtual void OnDrawGizmos()
@@ -118,9 +82,12 @@ namespace UCodeblock.UI
             Gizmos.DrawWireCube(rect.position + rect.size / 2, rect.size);
         }
 
+        /// <summary>
+        /// Returns the rectangle in which siblings can be dropped into.
+        /// </summary>
         public virtual Rect GetDropRect ()
         {
-            Rect block = _transform.GetWorldRect();
+            Rect block = _content.GetWorldRect();
 
             // Modify the position and size to be thinner and below the block
             block.position -= new Vector2(0, block.size.y * 0.6f);
@@ -129,32 +96,14 @@ namespace UCodeblock.UI
             return block;
         }
 
-        protected void GenerateContent ()
+        protected virtual void GenerateContent ()
         {
-            Transform content = _transform.Find("content");
-
-            if (Type == UIBlockType.Executable)
-            {
-                // Apply the minimum width and height to the block
-                Vector2 minSize = UCodeBlockSettings.Instance.MinBlockSize;
-
-                LayoutElement layout = content.GetComponent<LayoutElement>();
-                layout.minWidth = minSize.x;
-                layout.minHeight = minSize.y;
-            }
-            else if (Type == UIBlockType.Entry)
-            {
-                // Apply the minimum width to the block
-                Vector2 minSize = UCodeBlockSettings.Instance.MinBlockSize;
-                transform.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, minSize.x);
-            }
-
-            // If the block doesnt have a source, don't resolve any content
-            if (Source == null) return;
+            // If the block doesnt have a source or any content, don't resolve any content
+            if (Source == null || string.IsNullOrEmpty(Source.Content)) return;
 
             // Resolve the blocks content
             ContentResolver resolver = new ContentResolver(Source);
-            resolver.ResolveInto(content);
+            resolver.ResolveInto(_content);
         }
 
         /// <summary>
@@ -164,11 +113,11 @@ namespace UCodeblock.UI
         {
             UIBlockType type = GetBlockType(source);
             string name =
-                source != null
+                type != UIBlockType.Entry
                 ? $"Dynamic UI Codeblock [{ type.ToString() }] ({ source.Identity.ID })"
                 : $"Entry Codeblock";
 
-            string requiredPrefab = System.Enum.GetName(typeof(UIBlockType), (int)type);
+            string requiredPrefab = type.ToString();
             GameObject prefab = Resources.Load<GameObject>($"Codeblock_{requiredPrefab}");
 
             GameObject blockObject = Instantiate(prefab);
