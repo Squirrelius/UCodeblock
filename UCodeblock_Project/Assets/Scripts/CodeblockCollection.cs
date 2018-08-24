@@ -67,7 +67,7 @@ namespace UCodeblock
             Queue<CodeblockItem> items = new Queue<CodeblockItem>();
             
             CodeblockItem item = null;
-            string targetId = EntryID;
+            string targetId = EntryID ?? "";
             while ((item = this[targetId]) != null)
             {
                 items.Enqueue(item);

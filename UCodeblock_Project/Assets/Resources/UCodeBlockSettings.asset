@@ -11,4 +11,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e190024c852f91409e6d0d29bb19c11, type: 3}
   m_Name: UCodeBlockSettings
   m_EditorClassIdentifier: 
-  _minBlockWidth: 200
+  MinBlockSize: {x: 320, y: 22}

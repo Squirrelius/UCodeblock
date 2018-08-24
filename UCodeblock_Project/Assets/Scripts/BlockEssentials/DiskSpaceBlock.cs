@@ -6,11 +6,13 @@ namespace UCodeblock
 {
     public class DiskSpaceBlock : CodeblockItem, IDynamicEvaluateableCodeblock, IEvaluateableCodeblock<int>
     {
-        public override string Content => "Free Disk Space";
+        public override string Content => "Free MB on C:\\";
 
         public int Evaluate(ICodeblockExecutionContext context)
         {
-            return (int)GetTotalFreeSpace("C:");
+            long totalBytes = GetTotalFreeSpaceInBytes("C:\\");
+            int megaBytes = Mathf.FloorToInt((totalBytes / 1024f) / 1024f);
+            return megaBytes;
         }
 
         public object EvaluateObject (ICodeblockExecutionContext context)
@@ -18,7 +20,7 @@ namespace UCodeblock
             return Evaluate(context);
         }
 
-        private long GetTotalFreeSpace(string driveName)
+        private long GetTotalFreeSpaceInBytes(string driveName)
         {
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {

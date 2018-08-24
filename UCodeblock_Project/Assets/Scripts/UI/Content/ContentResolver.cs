@@ -32,50 +32,51 @@ namespace UCodeblock.UI
             while (i < length)
             {
                 c = content[i];
-                if (c == '}')
+                switch (c)
                 {
-                    if (!numstackOpen)
-                    {
-                        throw new FormatException();
-                    }
+                    case '}':
+                        if (!numstackOpen)
+                        {
+                            throw new FormatException();
+                        }
 
-                    int value;
-                    if (int.TryParse(numstack, out value))
-                    {
-                        ResolveProperty(lookup[value]).transform.SetParent(parent);
+                        int value;
+                        if (int.TryParse(numstack, out value))
+                        {
+                            ResolveProperty(lookup[value]).transform.SetParent(parent);
 
-                        numstackOpen = false;
-                        numstack = string.Empty;
-                    }
-                    else
-                    {
-                        throw new FormatException();
-                    }
+                            numstackOpen = false;
+                            numstack = string.Empty;
+                        }
+                        else
+                        {
+                            throw new FormatException();
+                        }
+                        break;
+
+                    case '{':
+                        if (numstackOpen)
+                        {
+                            throw new FormatException();
+                        }
+
+                        ResolveString(charstack).transform.SetParent(parent);
+
+                        numstackOpen = true;
+                        charstack = string.Empty;
+                        break;
+
+                    default:
+                        if (numstackOpen)
+                        {
+                            numstack += c;
+                        }
+                        else
+                        {
+                            charstack += c;
+                        }
+                        break;
                 }
-                else if (c == '{')
-                {
-                    if (numstackOpen)
-                    {
-                        throw new FormatException();
-                    }
-
-                    ResolveString(charstack).transform.SetParent(parent);
-
-                    numstackOpen = true;
-                    charstack = string.Empty;
-                }
-                else
-                {
-                    if (numstackOpen)
-                    {
-                        numstack += c;
-                    }
-                    else
-                    {
-                        charstack += c;
-                    }
-                }
-
                 i++;
             }
 

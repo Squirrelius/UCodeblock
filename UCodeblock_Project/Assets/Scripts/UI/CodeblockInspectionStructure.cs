@@ -63,9 +63,14 @@ namespace UCodeblock.UI
         /// <summary>
         /// Gets the <see cref="UICodeblock"/> of which the drop area overlaps the given rect.
         /// </summary>
-        public UICodeblock GetBlockInDropArea (Rect check)
+        public UICodeblock[] GetBlocksInDropArea (Rect check)
         {
-            return FindObjectsOfType<UICodeblock>().FirstOrDefault(block => block.GetDropRect().Overlaps(check));
+            return FindObjectsOfType<UICodeblock>().Where(block => block.GetDropRect().Overlaps(check)).ToArray();
+        }
+
+        public InputContent[] GetContentsInDropArea (Rect check)
+        {
+            return FindObjectsOfType<InputContent>().Where(content => content.GetDropRect().Overlaps(check)).ToArray();
         }
 
         /// <summary>
@@ -73,34 +78,30 @@ namespace UCodeblock.UI
         /// </summary>
         public void InsertItem (UICodeblock item, UICodeblock previousSibling)
         {
+            // Check if the previous sibling has a next sibling
+            var nextSiblings = previousSibling.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UICodeblock.UIBlockType.Executable);
+            UICodeblock nextSibling = nextSiblings.Count() > 1 ? nextSiblings.ElementAt(1) : null;
+
             // Update the codeblock collection
             List<UICodeblock> blocks = new List<UICodeblock>();
-            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>());
+            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UICodeblock.UIBlockType.Executable));
             CurrentSystem.Blocks.InsertItemRange(blocks.Select(b => b.Source).ToArray(), previousSibling.Source);
 
             // Update the transform hierarchy
             PlaceUnderCodeblock(item, previousSibling);
 
-            UICodeblock[] children = previousSibling.GetComponentsInChildren<UICodeblock>().Where(child => child != item).Skip(1).ToArray(); // Skip the first element, since that will be the previous sibling codeblock
-            // If the previous sibling has any children, insert the item between the previous sibling and its children
-            if (children.Length > 0)
-            {
-                PlaceUnderCodeblock(children[0], item);
-                for(int i = 1; i < children.Length; i++)
-                {
-                    PlaceUnderCodeblock(children[i], children[i - 1]);
-                }
-            }
+            // If there is a next sibling, place it after the last child of the new item
+            if (nextSibling != null)
+                PlaceUnderCodeblock(nextSibling, blocks.Last());
         }
         /// <summary>
         /// Detaches an item from its parent, inside the collection and in the UI.
         /// </summary>
-        /// <param name="item"></param>
         public void DetachItem (UICodeblock item)
         {
             // Update the codeblock collection
             List<UICodeblock> blocks = new List<UICodeblock>() { item };
-            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>());
+            blocks.AddRange(item.GetComponentsInChildren<UICodeblock>().Where(b => b.Type == UICodeblock.UIBlockType.Executable));
             CurrentSystem.Blocks.DetachItemRange(blocks.Select(b => b.Source).ToArray());
 
             // Update the transform hierarchy
@@ -117,7 +118,31 @@ namespace UCodeblock.UI
 
             item.transform.SetParent(parent.transform);
             item.PositionController.TargetLocalPosition = new Vector3(0, yPos);
-            //item.transform.localPosition = new Vector3(0, yPos);
+        }
+
+        public void InsertIntoInputContent (UICodeblock item, InputContent content)
+        {
+            item.transform.SetParent(content.DropArea);
+            item.PositionController.TargetLocalPosition = new Vector3(0, 0);
+
+            RectTransform rt = item.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.sizeDelta = Vector2.zero;
+
+            content.UpdateEvaluateableProperty();
+        }
+        public void RemoveFromContent(UICodeblock item)
+        {
+            item.transform.SetParent(_handle);
+            item.PositionController.TargetLocalPosition = item.PositionController.LocalPosition;
+
+            RectTransform rt = item.GetComponent<RectTransform>();
+            
+            foreach (InputContent content in FindObjectsOfType<InputContent>())
+            {
+                content.UpdateEvaluateableProperty();
+            }
         }
     }
 }
