@@ -14,18 +14,75 @@ namespace UCodeblock.UI
         public PropertyInfo Property { get; set; }
         public object ReferenceObject { get; set; }
 
+        public Transform DropArea => _dropArea;
+
+        public object AssignedCodeblock
+            => GetComponentInChildren<UICodeblock>()?.Source;
+        public object CurrentInputOperator
+        {
+            get { return _currentInputOperator; }
+            set
+            {
+                _currentInputOperator = value;
+                UpdateEvaluateableProperty();
+            }
+        }
+
+        private object _assignedCodeblock;
+        private object _currentInputOperator;
+
         public Type PropertyType => Property.PropertyType;
 
         private TMP_InputField _input;
         private TMP_Dropdown _dropdown;
-        private GameObject _dropArea;
+        private Transform _dropArea;
 
+        private Action _updateInputOperator;
         private Func<object> _evaluateInputMethod;
 
         protected override void InitializeContent()
         {
-            PrepareInputOfType(PropertyType);
+            bool isEvaluateableCodeblock = PropertyType.IsGenericType && PropertyType.GetGenericTypeDefinition() == typeof(IEvaluateableCodeblock<>);
+            bool isDynamicEvaluateableCodeblock = PropertyType == typeof(IDynamicEvaluateableCodeblock);
+
+            if (isEvaluateableCodeblock) // Since the codeblock can be evaluated to a known type, find the known type and prepare the input of that type
+            {
+                var genericParameter = PropertyType.GetGenericArguments().First();
+                PrepareInputOfType(genericParameter);
+            }
+            else if (isDynamicEvaluateableCodeblock) // Since the type is unknown here, handle it as a string, to allow any input
+            {
+                PrepareInputOfType(typeof(string));
+            }
+            else
+            {
+                throw new Exception($"You can't use the type { PropertyType } as a content property. Please use a property of type IEvaluateableCodeblock<> or IDynamicEvaluateableCodeblock instead.");
+            }
         }
+
+        public void UpdateEvaluateableProperty ()
+        {
+            if (AssignedCodeblock != null)
+            {
+                Property.SetValue(ReferenceObject, AssignedCodeblock);
+            }
+            else
+            {
+                if (CurrentInputOperator != null)
+                {
+                    Property.SetValue(ReferenceObject, CurrentInputOperator);
+                }
+                else
+                {
+                    throw new Exception($"Could not update property: No AssignedCodeblock and CurrentInputOperator were both null. (Conflicting Type: { PropertyType })");
+                }
+            }
+        }
+
+        public Rect GetDropRect ()
+        {
+            return GetComponent<RectTransform>().GetWorldRect();
+        }   
 
         private void PrepareInputOfType(Type type)
         {
@@ -36,10 +93,13 @@ namespace UCodeblock.UI
 
                 if (type == typeof(string))
                 {
+                    DynamicInputOperator<string> input = new DynamicInputOperator<string>();
+
                     _input.contentType = TMP_InputField.ContentType.Standard;
                     _input.text = "";
 
-                    _evaluateInputMethod = () => _input.text;
+                    _evaluateInputMethod = () => input.Value = _input.text;
+                    CurrentInputOperator = input;
                 }
                 if (type == typeof(int))
                 {
@@ -88,6 +148,8 @@ namespace UCodeblock.UI
             {
                 _dropdown.gameObject.SetActive(false);
             }
+
+            _dropArea = transform.GetChild(2);
         }
 
         private bool IsInputFieldType(Type type)
@@ -100,10 +162,6 @@ namespace UCodeblock.UI
         {
             return type == typeof(bool)
                 || type.IsEnum;
-        }
-        private bool IsCodeblockDropType(Type type)
-        {
-            return false;
         }
 
         private void OnTextChanged (string value)
@@ -120,7 +178,6 @@ namespace UCodeblock.UI
             if (_evaluateInputMethod == null) return;
 
             object evaluated = _evaluateInputMethod();
-            Property.SetValue(ReferenceObject, evaluated);
         }
 
         private List<TMP_Dropdown.OptionData> GenerateOptionsFromStrings (params string[] values)
