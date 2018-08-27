@@ -13,7 +13,12 @@ namespace UCodeblock.UI
         private void Start()
         {
             GenerateEntryBlock();
-            GenerateAllPossibleCodeblocks();
+            //GenerateAllPossibleCodeblocks();
+
+            TestBlockCreation<ComparisonOperationCodeblock>();
+            TestBlockCreation<DebugLogBlock>();
+            TestBlockCreation<DiskSpaceBlock>();
+            TestBlockCreation<IfBlock>();
         }
 
         private T TestBlockCreation<T>() where T : CodeblockItem
@@ -21,6 +26,8 @@ namespace UCodeblock.UI
             CodeblockItem x = Activator.CreateInstance<T>();
             Transform transform = UICodeblock.Generate(x).transform;
             transform.SetParent(Parent, false);
+
+            transform.position = GenerateRandomScreenPosition(new Vector2(Screen.width, Screen.height) - UCodeblockSettings.Instance.MinBlockSize);
 
             return x as T;
         }

@@ -58,6 +58,8 @@ namespace UCodeblock.UI
 
         protected override void InitializeContent()
         {
+            SetupSize();
+
             Type genericParameter;
             if (IsEvaluateableCodeblock(PropertyType, out genericParameter)) // Since the codeblock can be evaluated to a known type, find the known type and prepare the input of that type
             {
@@ -71,6 +73,20 @@ namespace UCodeblock.UI
             {
                 throw new Exception($"You can't use the type { PropertyType } as a content property. Please use a property of type IEvaluateableCodeblock<T> or IDynamicEvaluateableCodeblock instead.");
             }
+        }
+
+        private void SetupSize ()
+        {
+            ContentPropertyAttribute cpa = Property.GetCustomAttribute<ContentPropertyAttribute>();
+
+            float width = cpa.PreferredWidth;
+            float height = cpa.PreferredHeight;
+
+            Vector2 size = PreferredSize;
+            if (width > 0) size.x = width;
+            if (height > 0) size.y = height;
+
+            PreferredSize = size;
         }
 
         /// <summary>
@@ -107,7 +123,7 @@ namespace UCodeblock.UI
         /// </summary>
         public bool AllowBlockDrop (CodeblockItem item)
         {
-            return item.GetType() == PropertyType;
+            return PropertyType.IsAssignableFrom(item.GetType());
         }
 
         private static bool IsEvaluateableCodeblock (Type type, out Type genericArgument)
@@ -174,6 +190,12 @@ namespace UCodeblock.UI
                     _updateInputOperator = () => input.Value = float.Parse(_input.text);
                     CurrentInputOperator = input;
                 }
+
+                if (type == typeof(int) || type == typeof(float))
+                {
+                    print("size");
+                    PreferredSize = new Vector2(100, 20);
+                }
             }
             else
             {
@@ -201,8 +223,14 @@ namespace UCodeblock.UI
                     Type operatorType = typeof(DynamicInputOperator<>).MakeGenericType(elementType);
                     var input = Activator.CreateInstance(operatorType);
 
-                    var displayValues = Enum.GetValues(type).OfType<object>().Select(v => v.ToString()).ToArray().Select(v => new TMP_Dropdown.OptionData(v)).ToList();
-                    _dropdown.options = displayValues;
+                    var members = type.GetMembers(BindingFlags.Public | BindingFlags.Static);
+                    var displayValues = members.Select(m => m.GetCustomAttribute<CustomEnumNameAttribute>()?.CustomName ?? m.Name);
+                    var tmpData = displayValues.Select(v => new TMP_Dropdown.OptionData(v)).ToList();
+
+                    // print(string.Join(", ", attributes.ToArray()));
+                    // var displayValues = Enum.GetValues(type).OfType<object>().Select(v => v.ToString()).ToArray().Select(v => new TMP_Dropdown.OptionData(v)).ToList();
+
+                    _dropdown.options = tmpData;
                     _dropdown.value = 0;
 
                     _updateInputOperator = () =>

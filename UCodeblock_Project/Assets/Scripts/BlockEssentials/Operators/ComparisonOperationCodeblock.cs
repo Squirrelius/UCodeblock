@@ -10,22 +10,27 @@ namespace UCodeblock
         /// <summary>
         /// Checks if the left value and the right value are identical.
         /// </summary>
+        [CustomEnumName("=")]
         Equal,
         /// <summary>
         /// Checks if the left value is smaller than the right value.
         /// </summary>
+        [CustomEnumName("<")]
         SmallerThan,
         /// <summary>
         /// Checks if the left value is greater than the right value.
         /// </summary>
+        [CustomEnumName(">")]
         GreaterThan,
         /// <summary>
         /// Checks if the left value is smaller than or equal to the right value.
         /// </summary>
+        [CustomEnumName("<=")]
         SmallerOrEqual,
         /// <summary>
         /// Checks if the left value is greater than or equal to the right value.
         /// </summary>
+        [CustomEnumName(">=")]
         GreaterOrEqual
     }
 
@@ -37,12 +42,12 @@ namespace UCodeblock
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(string), typeof(int), typeof(float), typeof(bool) };
 
-        [ContentProperty(1)]
+        [ContentProperty(1, PreferredWidth = 50)]
         public IEvaluateableCodeblock<ComparisonOperation> Operation { get; set; }
 
-        [ContentProperty(0)]
+        [ContentProperty(0, PreferredWidth = 75)]
         public IDynamicEvaluateableCodeblock Left { get; set; }
-        [ContentProperty(2)]
+        [ContentProperty(2, PreferredWidth = 75)]
         public IDynamicEvaluateableCodeblock Right { get; set; }
 
         public override string Content => "{0} {1} {2}";

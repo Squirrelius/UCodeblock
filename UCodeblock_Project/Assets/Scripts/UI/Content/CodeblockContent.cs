@@ -26,5 +26,13 @@ namespace UCodeblock.UI
         }
 
         protected abstract void InitializeContent();
+
+        protected virtual void OnDrawGizmos()
+        {
+            Rect rect = GetComponent<RectTransform>().GetWorldRect();
+
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(rect.position + rect.size / 2, rect.size);
+        }
     }
 }

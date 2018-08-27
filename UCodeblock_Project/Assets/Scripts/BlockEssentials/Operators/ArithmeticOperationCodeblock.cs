@@ -10,18 +10,22 @@ namespace UCodeblock
         /// <summary>
         /// Adds two numbers together.
         /// </summary>
+        [CustomEnumName("+")]
         Add,
         /// <summary>
         /// Subtracts the right number from the left number.
         /// </summary>
+        [CustomEnumName("-")]
         Subtract,
         /// <summary>
         /// Multiplies two numbers together.
         /// </summary>
+        [CustomEnumName("*")]
         Multiply,
         /// <summary>
         /// Divides the left number by the right number;
         /// </summary>
+        [CustomEnumName("/")]
         Divide
     }
 
@@ -33,12 +37,12 @@ namespace UCodeblock
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(int), typeof(float) };
 
-        [ContentProperty(1)]
+        [ContentProperty(1, PreferredHeight = 40)]
         public IEvaluateableCodeblock<ArithmeticOperation> Operation { get; set; }
 
-        [ContentProperty(0)]
+        [ContentProperty(0, PreferredWidth = 75)]
         public IDynamicEvaluateableCodeblock Left { get; set; }
-        [ContentProperty(2)]
+        [ContentProperty(2, PreferredWidth = 75)]
         public IDynamicEvaluateableCodeblock Right { get; set; }
 
         public override string Content => "{0} {1} {2}";

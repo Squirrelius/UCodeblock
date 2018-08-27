@@ -10,10 +10,12 @@ namespace UCodeblock
         /// <summary>
         /// Checks if the left condition and the right condition are BOTH true.
         /// </summary>
+        [CustomEnumName("&&")]
         AND,
         /// <summary>
         /// Checks if EITHER the left or the right condition is true.
         /// </summary>
+        [CustomEnumName("||")]
         OR
     }
 
@@ -25,12 +27,12 @@ namespace UCodeblock
         public Type[] AllowedOperandTypes
             => new Type[] { typeof(bool) };
 
-        [ContentProperty(1)]
+        [ContentProperty(1, PreferredHeight = 50)]
         public IEvaluateableCodeblock<LogicalOperation> Operation { get; set; }
 
-        [ContentProperty(0)]
+        [ContentProperty(0, PreferredWidth = 75)]
         public IDynamicEvaluateableCodeblock Left { get; set; }
-        [ContentProperty(2)]
+        [ContentProperty(2, PreferredWidth = 75)]
         public IDynamicEvaluateableCodeblock Right { get; set; }
 
         public override string Content => "{0} {1} {2}";

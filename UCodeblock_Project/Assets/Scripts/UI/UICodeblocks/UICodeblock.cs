@@ -85,16 +85,7 @@ namespace UCodeblock.UI
         /// <summary>
         /// Returns the rectangle in which siblings can be dropped into.
         /// </summary>
-        public virtual Rect GetDropRect ()
-        {
-            Rect block = _content.GetWorldRect();
-
-            // Modify the position and size to be thinner and below the block
-            block.position -= new Vector2(0, block.size.y * 0.6f);
-            block.size = Vector2.Scale(block.size, new Vector2(1, 0.6f));
-
-            return block;
-        }
+        public virtual Rect GetDropRect() => _content.GetWorldRect();
 
         protected virtual void GenerateContent ()
         {

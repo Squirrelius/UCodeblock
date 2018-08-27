@@ -25,7 +25,7 @@ namespace UCodeblock.UI
             if (eventData.button == PointerEventData.InputButton.Left)
             {
                 InputContent[] contentsInDropArea = CodeblockInspectionStructure.Instance.GetContentsInDropArea(_transform.GetWorldRect());
-                InputContent leftmostInput = contentsInDropArea.OrderBy(c => c.transform.position.x).FirstOrDefault();
+                InputContent leftmostInput = contentsInDropArea.Except(GetComponentsInChildren<InputContent>()).OrderBy(c => c.transform.position.x).FirstOrDefault();
 
                 if (leftmostInput != null)
                 {
@@ -33,6 +33,10 @@ namespace UCodeblock.UI
                     {
                         CodeblockInspectionStructure.Instance.InsertIntoInputContent(this, leftmostInput);
                     }
+                }
+                else
+                {
+                    PositionController.Freeze();
                 }
             }
         }
